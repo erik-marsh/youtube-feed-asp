@@ -17,10 +17,10 @@ public struct VideoResponse
 {
     public VideoResponse(Video video)
     {
-        Id = video.Id;
+        Id = video.VideoId;
         if (video.Uploader is not null)
         {
-            UploaderId = video.Uploader.Id;
+            UploaderId = video.Uploader.ChannelId;
             UploaderName = video.Uploader.Name;
         }
         else

@@ -39,7 +39,7 @@ public class VideoService
         return m_context.Videos
             .Include(video => video.Uploader)
             .AsNoTracking()
-            .SingleOrDefault(video => video.Id == id);
+            .SingleOrDefault(video => video.VideoId == id);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public class VideoService
         return m_context.Channels
             .Include(channel => channel.Videos) // TODO: group by subs and watch later
             .AsNoTracking()
-            .SingleOrDefault(channel => channel.Id == id);
+            .SingleOrDefault(channel => channel.ChannelId == id);
     }
 
     // TODO: probably want methods that return this list with and without videos
@@ -179,7 +179,7 @@ public class VideoService
     {
         var channel = m_context.Channels
             .Include(channel => channel.Videos)
-            .SingleOrDefault(channel => channel.Id == id);
+            .SingleOrDefault(channel => channel.ChannelId == id);
         
         // TODO: what if videos get orphaned (reference a deleted channel)?
         if (channel is null)

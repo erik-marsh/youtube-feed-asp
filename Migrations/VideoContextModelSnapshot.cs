@@ -18,7 +18,12 @@ namespace youtube_feed_asp.Migrations
 
             modelBuilder.Entity("youtube_feed_asp.Models.Channel", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ChannelId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("LastModified")
@@ -35,8 +40,9 @@ namespace youtube_feed_asp.Migrations
 
             modelBuilder.Entity("youtube_feed_asp.Models.Video", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TimeAdded")
                         .HasColumnType("INTEGER");
@@ -51,7 +57,10 @@ namespace youtube_feed_asp.Migrations
                     b.Property<int?>("Type")
                         .HasColumnType("varchar(30)");
 
-                    b.Property<string>("UploaderId")
+                    b.Property<int>("UploaderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("VideoId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
