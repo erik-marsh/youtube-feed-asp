@@ -103,6 +103,25 @@ public class VideoController : ControllerBase
         return m_service.GetAllChannels();
     }
 
+    [HttpPut("channels")]
+    public ActionResult UpdateAllChannels()
+    {
+        var channels = m_service.GetAllChannels();// as List<Channel>;
+        foreach (var ch in channels)
+        {
+            m_service.UpdateChannelSubscriptions(ch);
+        }
+        return Ok();
+    }
+
+    [HttpPut("channels/{id}")]
+    public ActionResult UpdateChannel(Channel ch)
+    {
+        // TODO: need to distinguish between channels that exist and channels that don't exists with a 200 and 404 respectively
+        m_service.UpdateChannelSubscriptions(ch);
+        return Ok();
+    }
+
     [HttpGet("channels/{id}")]
     public ActionResult<Channel> GetChannel(string id)
     {
