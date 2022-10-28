@@ -33,7 +33,7 @@ public class Channel
     /// Unix timestamp representing the last time the channel uploaded a video.
     /// </summary>
     [Required]
-    public int LastModified { get; set; }
+    public long LastModified { get; set; }
  
     /// <summary>
     /// A list of videos associated with the channel.

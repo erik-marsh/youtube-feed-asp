@@ -59,13 +59,13 @@ public class Video
     /// Unix timestamp representing the time that the video was uploaded.
     /// </summary>
     [Required]
-    public int TimePublished { get; set; }
+    public long TimePublished { get; set; }
 
     /// <summary>
     /// Unix timestamp representing the time that the video was added to this database.
     /// </summary>
     [Required]
-    public int TimeAdded { get; set; }
+    public long TimeAdded { get; set; }
 
     /// <summary>
     /// The type of the video, used to differentiate between different video feeds provided by this software.

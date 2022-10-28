@@ -26,7 +26,7 @@ namespace youtube_feed_asp.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("LastModified")
+                    b.Property<long>("LastModified")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -44,10 +44,10 @@ namespace youtube_feed_asp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TimeAdded")
+                    b.Property<long>("TimeAdded")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TimePublished")
+                    b.Property<long>("TimePublished")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
