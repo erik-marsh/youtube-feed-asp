@@ -1,11 +1,17 @@
 using youtube_feed_asp.Models;
 using youtube_feed_asp.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
+using System.ServiceModel.Syndication;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace youtube_feed_asp.Services;
 
 public class VideoService
 {
+    private const string s_rssBaseUrl = "https://www.youtube.com/feeds/videos.xml?channel_id=";
+
     private readonly VideoContext m_context;
 
     public VideoService(VideoContext context)
@@ -92,6 +98,7 @@ public class VideoService
     /// </remarks>
     public void DeleteVideo(string id)
     {
+        // TODO: do i also need to remove the video from its associated channels?
         var video = m_context.Videos.Find(id);
         if (video is null)
             return;
@@ -188,4 +195,114 @@ public class VideoService
         m_context.Videos.RemoveRange(channel.Videos); // shouldn't be null, so we let it throw if it is
         m_context.Channels.Remove(channel);
     }
+
+    // TODO: need to make sure this doesn't block super hard when waiting for the HTTP request for the feed to resolve
+    public void UpdateChannelSubscriptions(Channel ch)
+    {
+        var httpRequestTimer = new Stopwatch();
+        var feedParsingTimer = new Stopwatch();
+        var databaseWriteTimer = new Stopwatch();
+
+        if (ch is null)
+        {
+            Console.WriteLine($"Attempted to update channel that does not exist in the database. Abort.");
+            return;
+        }
+
+        httpRequestTimer.Start();
+        var feed = GetChannelRSSFeed(ch.ChannelId);
+        httpRequestTimer.Stop();
+        Console.WriteLine($"Retrieved RSS feed in {httpRequestTimer.ElapsedMilliseconds}ms");
+
+        var feedVideos = feed.Items.ToList();
+        var newVideos = new List<Video>();
+
+        Console.WriteLine($"Updating channel: {feed.Title.Text} ({ch.ChannelId}) (last modified at {ch.LastModified})");
+
+
+        feedParsingTimer.Start();
+        // reverse iteration because the videos are ordered newest to oldest
+        // and we want to incrementally update the LastModified field
+        for (int i = feedVideos.Count - 1; i >= 0; i--)
+        {
+            var videoPublished = feedVideos[i].PublishDate.ToUnixTimeSeconds();
+
+            if (videoPublished > ch.LastModified)
+            {
+                ch.LastModified = (int)videoPublished;
+
+                var v = new Video() {
+                    VideoId = GetVideoId(feedVideos[i]),
+                    Uploader = ch,
+                    Title = feedVideos[i].Title.Text,
+                    TimePublished = (int)videoPublished,
+                    TimeAdded = (int)DateTimeOffset.Now.ToUnixTimeSeconds(),
+                    Type = VideoType.Subscription
+                };
+
+                newVideos.Add(v);
+
+                //Console.WriteLine($"  Found new video: {v.VideoId}: {v.Title}");
+                //Console.WriteLine($"    Uploaded: {v.TimePublished}");
+                //Console.WriteLine($"    Added to database at {v.TimeAdded}");
+            }
+        }
+
+        feedParsingTimer.Stop();
+        Console.WriteLine($"Parsed feed in {feedParsingTimer.ElapsedMilliseconds}ms");
+
+        Console.WriteLine($"{newVideos.Count} new videos added.");
+
+        if (newVideos.Count == 0) return;
+
+        databaseWriteTimer.Start();
+
+        // see https://stackoverflow.com/questions/66017750/ef-core-3-1-re-inserting-existing-navigational-property-when-adding-new-entity
+        // if we did AddRange, it would attempt to re-insert the Channel as well (because it was marked as Added)
+        // TL;DR there is Microsoft Magic happening in the background that wants to reinsert the channel
+        // however, Attach only marks things as Added if their primary key is unset. Otherwise, they are marked as unchanged.
+        m_context.Videos.AttachRange(newVideos);
+
+        // BUT!
+        // since the channel was marked as unchanged, it would not update the channel's LastModified value.
+        // this is bad, since our whole update mechanism depends on this value.
+        // fortunately, we can manually set the property as being changed with this line
+        // the implementation will perform an UPDATE query and not attempt to reinsert the value
+        // relevant SO link: https://stackoverflow.com/questions/3642371/how-to-update-only-one-field-using-entity-framework
+        m_context.Entry(ch)
+            .Property(x => x.LastModified)
+            .IsModified = true;
+        m_context.SaveChanges();
+
+        databaseWriteTimer.Stop();
+        Console.WriteLine($"Wrote to database in {databaseWriteTimer.ElapsedMilliseconds}ms");
+    }
+
+    /// <summary>
+    /// Fetches the RSS feed associated with a certain channel and returns it.
+    /// </summary>
+    private static SyndicationFeed GetChannelRSSFeed(string channelId)
+    {
+        string rssUrl = s_rssBaseUrl + channelId;
+        var reader = XmlReader.Create(rssUrl);
+        var feed = SyndicationFeed.Load(reader);
+        reader.Close();
+
+        return feed;
+    }
+
+    /// <summary>
+    /// Extracts a Base64 YouTube video ID from a video entry in a YouTube RSS feed.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// May throw this exception if the SyndicationItem has no videoId extension element.
+    /// I think it's better for the application to crash here, since this is a critical error.
+    /// Not having access to YouTube video IDs renders this entire application useless.
+    /// </exception>
+    private static string GetVideoId(SyndicationItem item)
+    {
+        var extensionObject = item.ElementExtensions.Single(x => x.OuterName == "videoId");
+        return extensionObject.GetObject<XElement>().Value;
+    }
+
 }
