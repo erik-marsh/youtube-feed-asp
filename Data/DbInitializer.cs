@@ -6,7 +6,48 @@ public static class DbInitializer
 {
     public static void Initialize(VideoContext context)
     {
-        if (context.Videos.Any() && context.Channels.Any())
+        InitializeWithOnlyChannels(context);
+    }
+
+    public static void InitializeWithOnlyChannels(VideoContext context)
+    {
+        var channel = new Channel {
+            ChannelId = "UCqms1E3UhFpC0RRxZQNF-ag",
+            Name = "fuopy",
+            LastModified = 1000000
+        };
+
+        var channel2 = new Channel {
+            ChannelId = "UCSPLhwvj0gBufjDRzSQb3GQ",
+            Name = "BobbyBroccoli",
+            LastModified = 123476372,
+            Videos = new List<Video>()
+        };
+
+        var channel3 = new Channel {
+            ChannelId = "UCLrno_gfh32wX4I8-6qV4Wg",
+            Name = "Running Shine",
+            LastModified = 1234763722,
+            Videos = new List<Video>()
+        };
+
+        var channel4 = new Channel {
+            ChannelId = "UCBn6YYmhnruGtEtlKxYbQ9A",
+            Name = "K Klein",
+            LastModified = 1234722672,
+            Videos = new List<Video>()
+        };
+
+        context.Channels.Add(channel);
+        context.Channels.Add(channel2);
+        context.Channels.Add(channel3);
+        context.Channels.Add(channel4);
+        context.SaveChanges();
+    }
+
+    public static void InitializeWithAssortedData(VideoContext context)
+    {
+                if (context.Videos.Any() && context.Channels.Any())
             return;
 
         var video = new Video {
@@ -26,19 +67,16 @@ public static class DbInitializer
         };
 
         var channel = new Channel {
-            ChannelId = "fuopy",
+            ChannelId = "UCqms1E3UhFpC0RRxZQNF-ag",
             Name = "fuopy",
             LastModified = 1000000
         };
 
-        //UCSPLhwvj0gBufjDRzSQb3GQ|BobbyBroccoli|2022-07-22 12:00:51+00:00
         var channel2 = new Channel {
             ChannelId = "UCSPLhwvj0gBufjDRzSQb3GQ",
             Name = "BobbyBroccoli",
             LastModified = 123476372,
-            Videos = new List<Video>() {
-
-            }
+            Videos = new List<Video>()
         };
 
         var channel3 = new Channel {
@@ -59,14 +97,11 @@ public static class DbInitializer
 
         channel3.Videos.Add(video30);
 
-        //UCBn6YYmhnruGtEtlKxYbQ9A|K Klein|2022-08-26 10:00:01+00:00
         var channel4 = new Channel {
             ChannelId = "UCBn6YYmhnruGtEtlKxYbQ9A",
             Name = "K Klein",
             LastModified = 1234722672,
-            Videos = new List<Video>() {
-
-            }
+            Videos = new List<Video>()
         };
 
         video.Uploader = channel;
