@@ -12,6 +12,8 @@ public static class DbInitializer
 
     public static void InitializeWithOnlyChannels(VideoContext context)
     {
+        if (context.Channels.Count() != 0) return;
+
         var channels = new List<Channel>();
 
         channels.Add(new Channel {
@@ -50,21 +52,21 @@ public static class DbInitializer
 
         channels.Add(test);
 
-        context.Channels.AddRange(channels);
-
         foreach (var ch in channels)
         {
             var newVideos = VideoScraper.VideoScraper.UpdateChannelSubscriptions(ch);
             context.Videos.AttachRange(newVideos);
-            context.Entry(ch)
-                .Property(x => x.LastModified)
-                .IsModified = true;
+            // context.Entry(ch)
+            //     .Property(x => x.LastModified)
+            //     .IsModified = true;
         }
 
         foreach (var vid in test.Videos)
         {
             vid.Type = VideoType.WatchLater;
         }
+
+        context.Channels.AddRange(channels);
 
         context.SaveChanges();
     }
