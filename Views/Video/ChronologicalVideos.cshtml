@@ -1,3 +1,25 @@
+@model List<youtube_feed_asp.Models.Video>
+
 <h1>test</h1>
 
-@ViewData["Test"]
+<table>
+  @for (int i = 0; i < Model.Count(); i++)
+  {
+    <tr>
+      <td>
+        <a
+          target="_blank"
+          href="https://www.youtube.com/watch?v=@Model[i].VideoId"
+        >
+          @Model[i].Title
+        </a>
+      </td>
+      <td>
+        @DateTimeOffset.FromUnixTimeSeconds(Model[i].TimePublished).ToString("u", System.Globalization.CultureInfo.InvariantCulture)
+      </td>
+      <td>
+        @Model[i].Uploader.Name
+      </td>
+    </tr>
+  }
+</table>

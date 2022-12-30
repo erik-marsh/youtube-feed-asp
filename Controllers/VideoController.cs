@@ -67,11 +67,7 @@ public class VideoController : Controller
         if (videos is null)
             return NotFound();
 
-        foreach (var v in videos)
-        {
-            Console.WriteLine($"{v.Title} {v.Uploader.Name}");
-        }
-        return View("./ChronologicalVideos");
+        return View("./ChronologicalVideos", videos);
     }
 
     // TODO: these URLs are getting lengthy
