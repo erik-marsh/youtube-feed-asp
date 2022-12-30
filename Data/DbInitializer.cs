@@ -41,8 +41,16 @@ public static class DbInitializer
             Videos = new List<Video>()
         });
 
+        var test = new Channel {
+            ChannelId = "UCuvSqzfO_LV_QzHdmEj84SQ",
+            Name = "watchlater",
+            LastModified = 0,
+            Videos = new List<Video>()
+        };
+
+        channels.Add(test);
+
         context.Channels.AddRange(channels);
-        context.SaveChanges();
 
         foreach (var ch in channels)
         {
@@ -51,7 +59,13 @@ public static class DbInitializer
             context.Entry(ch)
                 .Property(x => x.LastModified)
                 .IsModified = true;
-            context.SaveChanges();
         }
+
+        foreach (var vid in test.Videos)
+        {
+            vid.Type = VideoType.WatchLater;
+        }
+
+        context.SaveChanges();
     }
 }
