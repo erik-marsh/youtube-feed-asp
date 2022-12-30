@@ -50,13 +50,28 @@ public struct VideoResponse
 
 [ApiController]
 [Route("[controller]")]
-public class VideoController : ControllerBase
+public class VideoController : Controller
 {
     private VideoService m_service;
 
     public VideoController(VideoService service)
     {
         m_service = service;
+    }
+
+    [HttpGet("test")]
+    public ActionResult TestQuery()
+    {
+        ViewData["Test"] = "Hello, world!";
+        var videos = m_service.VideoQuery(VideoType.Subscription, "all", SortType.DateDescending);
+        if (videos is null)
+            return NotFound();
+
+        foreach (var v in videos)
+        {
+            Console.WriteLine($"{v.Title} {v.Uploader.Name}");
+        }
+        return View("./ChronologicalVideos");
     }
 
     // TODO: these URLs are getting lengthy
