@@ -59,6 +59,58 @@ public class VideoController : ControllerBase
         m_service = service;
     }
 
+    // TODO: these URLs are getting lengthy
+    [HttpGet("api/{videoType}/{channelId}/{sortType}")]
+    public ActionResult<IEnumerable<VideoResponse>> VideoQuery(string videoType, string channelId, string sortType)
+    {
+        VideoType? parsedVideoType = videoType switch {
+            "subscriptions" => VideoType.Subscription,
+            "watch-later" => VideoType.WatchLater,
+            _ => null
+        };
+
+        SortType? parsedSortType = sortType switch {
+            "date" => SortType.Date,
+            "channel" => SortType.Channel,
+            _ => null 
+        };
+
+        Console.WriteLine($"VideoType == {parsedVideoType.ToString()}");
+        Console.WriteLine($"SortType == {parsedSortType.ToString()}");
+
+        if (parsedSortType is null || parsedVideoType is null)
+            return NotFound();
+        
+        // TODO: there has to be a better way
+        VideoType type = (VideoType) parsedVideoType;
+        SortType sort = (SortType) parsedSortType;
+
+        var videos = new List<Video>();
+
+        if (channelId == "all")
+        {
+            Console.WriteLine("parsing all channels");
+            videos.AddRange(m_service.QueryAllChannels(type, sort));
+        }
+        else
+        {
+            Console.WriteLine($"attempting to parse regular channel {channelId}");
+            try
+            {
+                videos.AddRange(m_service.QueryChannel(channelId, type, sort));
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return NotFound();
+            }
+        }
+
+        // ToList is required because the implicit conversion to an ActionResult must happen on a concrete type
+        // ... i think is the reasoning
+        return videos.Select(video => new VideoResponse(video)).ToList();
+    }
+
     [HttpGet("videos")]
     public IEnumerable<VideoResponse> GetAllVideos()
     {

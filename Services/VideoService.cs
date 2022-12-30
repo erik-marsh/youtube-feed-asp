@@ -1,5 +1,6 @@
 using youtube_feed_asp.Models;
 using youtube_feed_asp.Data;
+using youtube_feed_asp.VideoScraper;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.ServiceModel.Syndication;
@@ -7,6 +8,12 @@ using System.Xml;
 using System.Xml.Linq;
 
 namespace youtube_feed_asp.Services;
+
+public enum SortType
+{
+    Date,
+    Channel
+}
 
 public class VideoService
 {
@@ -19,6 +26,29 @@ public class VideoService
         m_context = context;
     }
 
+
+    public IEnumerable<Video> QueryAllChannels(VideoType videoType, SortType sortType)
+    {
+        var videos = m_context.Videos
+            .Include(video => video.Uploader)
+            .AsNoTracking()
+            .Where(video => video.Type == videoType);
+
+        return videos;
+    }
+
+    public IEnumerable<Video> QueryChannel(string channelId, VideoType videoType, SortType sortType)
+    {
+        var ch = m_context.Channels
+            .Include(channel => channel.Videos)
+            .AsNoTracking()
+            .SingleOrDefault(channel => channel.ChannelId == channelId);
+
+        if (ch is null)
+            throw new ArgumentException($"Channel ID {channelId} not found.");
+        
+        return ch.Videos.Where(video => video.Type == videoType);
+    }
 
     //==============================================================================
     // Video Database Methods
