@@ -48,7 +48,63 @@ public class VideoService
         }
     }
 
-    public IEnumerable<Video> QueryAllChannels(VideoType videoType, SortType sortType)
+    public List<Video>? VideoQuery(string videoType, string channelId, string sortType)
+    {
+        VideoType? parsedVideoType = videoType switch {
+            "subscriptions" => VideoType.Subscription,
+            "watch-later" => VideoType.WatchLater,
+            _ => null
+        };
+
+        SortType? parsedSortType = sortType switch {
+            "date-ascending" => SortType.DateAscending,
+            "date-descending" => SortType.DateDescending,
+            "added-ascending" => SortType.AddedAscending,
+            "added-descending" => SortType.AddedDescending,
+            "channel" => SortType.Channel,
+            _ => null 
+        };
+
+        Console.WriteLine($"VideoType == {parsedVideoType.ToString()}");
+        Console.WriteLine($"SortType == {parsedSortType.ToString()}");
+
+        if (parsedSortType is null || parsedVideoType is null)
+            return null;
+        
+        // TODO: there has to be a better way
+        VideoType type = (VideoType) parsedVideoType;
+        SortType sort = (SortType) parsedSortType;
+
+        return VideoQuery(type, channelId, sort);
+    }
+
+    public List<Video>? VideoQuery(VideoType videoType, string channelId, SortType sortType)
+    {
+        var videos = new List<Video>();
+
+        if (channelId == "all")
+        {
+            Console.WriteLine("parsing all channels");
+            videos.AddRange(QueryAllChannels(videoType, sortType));
+        }
+        else
+        {
+            Console.WriteLine($"attempting to parse regular channel {channelId}");
+            try
+            {
+                videos.AddRange(QueryChannel(channelId, videoType, sortType));
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+        return videos;
+    }
+
+    private List<Video> QueryAllChannels(VideoType videoType, SortType sortType)
     {
         var videos = m_context.Videos
             .Include(video => video.Uploader)
@@ -59,7 +115,7 @@ public class VideoService
         return SortVideosBy(videos, sortType);
     }
 
-    public IEnumerable<Video> QueryChannel(string channelId, VideoType videoType, SortType sortType)
+    private List<Video> QueryChannel(string channelId, VideoType videoType, SortType sortType)
     {
         var ch = m_context.Channels
             .Include(channel => channel.Videos)
