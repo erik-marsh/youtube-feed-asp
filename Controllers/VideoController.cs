@@ -70,7 +70,10 @@ public class VideoController : ControllerBase
         };
 
         SortType? parsedSortType = sortType switch {
-            "date" => SortType.Date,
+            "date-ascending" => SortType.DateAscending,
+            "date-descending" => SortType.DateDescending,
+            "added-ascending" => SortType.AddedAscending,
+            "added-descending" => SortType.AddedDescending,
             "channel" => SortType.Channel,
             _ => null 
         };

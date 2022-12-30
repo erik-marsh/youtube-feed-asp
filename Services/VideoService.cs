@@ -3,16 +3,17 @@ using youtube_feed_asp.Data;
 using youtube_feed_asp.VideoScraper;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.ServiceModel.Syndication;
-using System.Xml;
-using System.Xml.Linq;
 
 namespace youtube_feed_asp.Services;
 
 public enum SortType
 {
-    Date,
-    Channel
+    DateAscending,
+    DateDescending,
+    AddedAscending,
+    AddedDescending,
+    Channel,
+    None
 }
 
 public class VideoService
@@ -27,14 +28,35 @@ public class VideoService
     }
 
 
+    private static List<Video> SortVideosBy(List<Video> list, SortType sortType)
+    {
+        switch (sortType)
+        {
+        case SortType.DateAscending:
+            return list.OrderBy(video => video.TimePublished).ToList();
+        case SortType.DateDescending:
+            return list.OrderByDescending(video => video.TimePublished).ToList();
+        case SortType.AddedAscending:
+            return list.OrderBy(video => video.TimeAdded).ToList();
+        case SortType.AddedDescending:
+            return list.OrderByDescending(video => video.TimeAdded).ToList();
+        case SortType.Channel:
+            return list.OrderBy(video => video.Uploader.ChannelId).ToList();
+        case SortType.None:
+        default:
+            return list;
+        }
+    }
+
     public IEnumerable<Video> QueryAllChannels(VideoType videoType, SortType sortType)
     {
         var videos = m_context.Videos
             .Include(video => video.Uploader)
             .AsNoTracking()
-            .Where(video => video.Type == videoType);
+            .Where(video => video.Type == videoType)
+            .ToList();
 
-        return videos;
+        return SortVideosBy(videos, sortType);
     }
 
     public IEnumerable<Video> QueryChannel(string channelId, VideoType videoType, SortType sortType)
@@ -47,7 +69,10 @@ public class VideoService
         if (ch is null)
             throw new ArgumentException($"Channel ID {channelId} not found.");
         
-        return ch.Videos.Where(video => video.Type == videoType);
+        var filteredVideos = ch.Videos
+            .Where(video => video.Type == videoType)
+            .ToList();
+        return SortVideosBy(filteredVideos, sortType);
     }
 
     //==============================================================================
