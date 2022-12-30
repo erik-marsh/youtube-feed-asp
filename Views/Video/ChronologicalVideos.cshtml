@@ -15,6 +15,9 @@
         </a>
       </td>
       <td>
+        @Model[i].VideoId
+      </td>
+      <td>
         @DateTimeOffset.FromUnixTimeSeconds(Model[i].TimePublished).ToString("u", System.Globalization.CultureInfo.InvariantCulture)
       </td>
       <td>

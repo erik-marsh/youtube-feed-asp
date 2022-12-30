@@ -83,6 +83,31 @@ public class VideoController : Controller
         return videos.Select(video => new VideoResponse(video)).ToList();
     }
 
+    [HttpPost("channels/{channelId}")]
+    public ActionResult SubscribeToChannel(string channelId)
+    {
+        return NotFound();
+    }
+
+    [HttpDelete("channels/{channelId}")]
+    public ActionResult UnsubscribeFromChannel(string channelId)
+    {
+        return NotFound();
+    }
+
+    [HttpPut("channels/{channelId}")]
+    public ActionResult UpdateChannelVideos(string channelId)
+    {
+        return NotFound();
+    }
+
+    [HttpDelete("videos/{videoId}")]
+    public ActionResult RemoveVideo(string videoId)
+    {
+        bool succeeded = m_service.DeleteVideo(videoId);
+        return succeeded ? Ok() : NotFound();
+    }
+
     // [HttpGet("videos")]
     // public IEnumerable<VideoResponse> GetAllVideos()
     // {

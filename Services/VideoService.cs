@@ -207,15 +207,23 @@ public class VideoService
     /// <remarks>
     /// If the ID does not correspond to a video in the database, this function does nothing.
     /// </remarks>
-    public void DeleteVideo(string id)
+    /// <returns>
+    /// If the video is not in the database, returns false.
+    /// If the video is in the database, deletes the video from the database and returns true.
+    /// </returns>
+    public bool DeleteVideo(string id)
     {
         // TODO: do i also need to remove the video from its associated channels?
-        var video = m_context.Videos.Find(id);
-        if (video is null)
-            return;
+        // yes, this is intentionally an IEnumerable
+        // in the documentation for Video, I note that there is weridness
+        // with YouTube premieres/etc that make video IDs non-unique
+        var videos = m_context.Videos.Where(video => video.VideoId == id);
+        if (videos.Count() == 0)
+            return false;
 
-        m_context.Videos.Remove(video);
+        m_context.Videos.RemoveRange(videos);
         m_context.SaveChanges();
+        return true;
     }
 
 
