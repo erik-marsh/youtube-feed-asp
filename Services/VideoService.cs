@@ -131,6 +131,58 @@ public class VideoService
         return SortVideosBy(filteredVideos, sortType);
     }
 
+    /// <summary>
+    /// Adds a channel to the database.
+    /// </summary>
+    /// <remarks>
+    /// Does not add any videos uploaded by the channel to the database.
+    /// </remarks>
+    /// <param name="channelId">A Base64 YouTube canonical channel ID.</param>
+    /// <returns>
+    /// If the channel already exists in the database
+    /// OR the channel ID does not correspond to a channel, returns false.
+    /// Otherwise, the channel is added to the database and this function returns true.
+    /// </returns>
+    public bool SubscribeToChannel(string channelId)
+    {
+        var ch = m_context.Channels.SingleOrDefault(channel => channel.ChannelId == channelId);
+        if (ch is not null)
+            return false;
+
+        ch = VideoScraper.VideoScraper.GetChannelFromID(channelId);
+        if (ch is null)
+            return false;
+        
+        m_context.Channels.Add(ch);
+        m_context.SaveChanges();
+        return true;
+    }
+
+    /// <summary>
+    /// Removes a channel and all of it's associated videos tagged with VideoType.Subscription from the database.
+    /// </summary>
+    /// <param name="channelId">A Base64 YouTube canonical channel ID.</param>
+    /// <returns>
+    /// If the channel is not in the database, returns false.
+    /// Otherwise, removes the channel and it's videos and returns true.
+    /// </returns>
+    public bool UnsubscribeFromChannel(string channelId)
+    {
+        var ch = m_context.Channels
+            .Include(channel => channel.Videos)
+            .SingleOrDefault(channel => channel.ChannelId == channelId);
+
+        if (ch is null)
+            return false;
+
+        // remove all subscriptions from this channel from the database
+        var videos = ch.Videos.Where(v => v.Type == VideoType.Subscription);
+        m_context.Videos.RemoveRange(videos);
+        m_context.Channels.Remove(ch);
+        m_context.SaveChanges();
+        return true;
+    }
+
     //==============================================================================
     // Video Database Methods
     //==============================================================================

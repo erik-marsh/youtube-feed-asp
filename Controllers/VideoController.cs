@@ -86,19 +86,26 @@ public class VideoController : Controller
     [HttpPost("channels/{channelId}")]
     public ActionResult SubscribeToChannel(string channelId)
     {
-        return NotFound();
+        bool succeeded = m_service.SubscribeToChannel(channelId);
+        return succeeded ? Ok() : BadRequest();
     }
 
     [HttpDelete("channels/{channelId}")]
     public ActionResult UnsubscribeFromChannel(string channelId)
     {
-        return NotFound();
+        bool succeeded = m_service.UnsubscribeFromChannel(channelId);
+        return succeeded ? Ok() : NotFound();
     }
 
     [HttpPut("channels/{channelId}")]
     public ActionResult UpdateChannelVideos(string channelId)
     {
-        return NotFound();
+        var ch = m_service.GetChannel(channelId);
+        if (ch is null)
+            return NotFound();
+
+        m_service.UpdateChannelSubscriptions(ch);
+        return Ok();
     }
 
     [HttpDelete("videos/{videoId}")]

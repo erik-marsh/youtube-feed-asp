@@ -64,6 +64,35 @@ public static class VideoScraper
         return newVideos;
     }
 
+    // TODO: this is no longer a VideoScraper, more like an RSS scraper
+    /// <summary>
+    /// Constructs a Channel object from a channel ID.
+    /// </summary>
+    /// <param name="channelId">A Base64 YouTube canonical channel ID.</param>
+    /// <returns>
+    /// If the channel ID points to a valid YouTube channel, returns the corresponding Channel object.
+    /// Otherwise, returns null.
+    /// </returns>
+    public static Channel? GetChannelFromID(string channelId)
+    {
+        // TODO: move this to GetChannelRSSFeed
+        try
+        {
+            var feed = GetChannelRSSFeed(channelId);
+            return new Channel {
+                ChannelId = channelId,
+                Name = feed.Title.Text,
+                LastModified = 0,
+                Videos = new List<Video>()
+            };
+        }
+        catch (System.Net.Http.HttpRequestException ex)
+        {
+            Console.WriteLine($"{ex.Message} at {ex.Source}");
+            return null;
+        }
+    }
+
     /// <summary>
     /// Fetches the RSS feed associated with a certain channel and returns it.
     /// </summary>
