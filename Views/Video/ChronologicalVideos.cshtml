@@ -1,28 +1,30 @@
+@{
+  Layout = "/Views/_Layout.cshtml"; // root path is the project root
+}
+
 @model List<youtube_feed_asp.Models.Video>
 
-<h1>test</h1>
+<h1>Subscriptions</h1>
 
 <table>
   @for (int i = 0; i < Model.Count(); i++)
   {
-    <tr>
-      <td>
+    <div class="row" id="@Model[i].VideoId">
+      <div class="col-8">
+        <button class="btn-close btn-close-white"></button>
         <a
           target="_blank"
           href="https://www.youtube.com/watch?v=@Model[i].VideoId"
         >
           @Model[i].Title
         </a>
-      </td>
-      <td>
-        @Model[i].VideoId
-      </td>
-      <td>
+      </div>
+      <div class="col-2">
         @DateTimeOffset.FromUnixTimeSeconds(Model[i].TimePublished).ToString("u", System.Globalization.CultureInfo.InvariantCulture)
-      </td>
-      <td>
-        @Model[i].Uploader.Name
-      </td>
-    </tr>
+      </div>
+      <div class="col-2">
+        <a href="https://www.youtube.com/channel/@Model[i].Uploader.ChannelId">@Model[i].Uploader.Name</a>
+      </div>
+    </div>
   }
 </table>
