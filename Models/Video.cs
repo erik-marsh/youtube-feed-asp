@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace youtube_feed_asp.Models;
@@ -72,4 +73,28 @@ public class Video
     /// </summary>
     [Column(TypeName = "varchar(30)")]
     public VideoType? Type { get; set; }
+
+    /// <summary>
+    /// Returns the URL that points to the video.
+    /// </summary>
+    [NotMapped]
+    public string Url => $"https://www.youtube.com/watch?v={VideoId}";
+
+    /// <summary>
+    /// Returns a human-readable form of the upload time.
+    /// </summary>
+    public string GetReadablePublishingTime()
+    {
+        var published = DateTimeOffset.FromUnixTimeSeconds(TimePublished);
+        return published.ToString("f", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Returns a human-readable form of the added time.
+    /// </summary>
+    public string GetReadableAddedTime()
+    {
+        var added = DateTimeOffset.FromUnixTimeSeconds(TimeAdded);
+        return added.ToString("f", CultureInfo.InvariantCulture);
+    }
 }

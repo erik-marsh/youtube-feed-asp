@@ -39,4 +39,10 @@ public class Channel
     /// A list of videos associated with the channel.
     /// </summary>
     public ICollection<Video>? Videos { get; set; }
+
+    /// <summary>
+    /// Returns the canonical URL that points to the channel.
+    /// </summary>
+    [NotMapped]
+    public string Url => $"https://www.youtube.com/channel/{ChannelId}";
 }
