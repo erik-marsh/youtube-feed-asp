@@ -86,7 +86,7 @@ public class Video
     public string GetReadablePublishingTime()
     {
         var published = DateTimeOffset.FromUnixTimeSeconds(TimePublished);
-        return published.ToString("f", CultureInfo.InvariantCulture);
+        return published.ToString("h:mm tt M/d/yyyy");
     }
 
     /// <summary>
@@ -95,6 +95,6 @@ public class Video
     public string GetReadableAddedTime()
     {
         var added = DateTimeOffset.FromUnixTimeSeconds(TimeAdded);
-        return added.ToString("f", CultureInfo.InvariantCulture);
+        return added.ToString("h:mm tt M/d/yyyy");
     }
 }
