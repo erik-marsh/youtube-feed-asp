@@ -131,6 +131,38 @@ public class VideoService
         return SortVideosBy(filteredVideos, sortType);
     }
 
+    public List<Channel>? ChannelQuery(VideoType videoType, string channelId, SortType sortType)
+    {
+        var channels = new List<Channel>();
+        if (channelId == "all")
+        {
+            var res = m_context.Channels
+                .Include(channel => channel.Videos)
+                .AsNoTracking();
+            
+            channels.AddRange(res);
+        }
+        else
+        {
+            var ch = m_context.Channels
+                .Include(channel => channel.Videos)
+                .AsNoTracking()
+                .SingleOrDefault(channel => channel.ChannelId == channelId);
+            
+            if (ch is null)
+                return null;
+            
+            channels.Add(ch);
+        }
+
+        foreach (var ch in channels)
+        {
+            ch.Videos = ch.Videos.Where(video => video.Type == videoType).ToList();
+        }
+
+        return channels;
+    }
+
     /// <summary>
     /// Adds a channel to the database.
     /// </summary>

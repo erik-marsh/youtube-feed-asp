@@ -72,7 +72,7 @@ public class VideoController : Controller
     [HttpGet("test2")]
     public ActionResult TestQuery2()
     {
-        var channels = m_service.GetAllChannels().ToList();
+        var channels = m_service.ChannelQuery(VideoType.Subscription, "all", SortType.DateDescending);
         if (channels is null)
             return NotFound();
 
