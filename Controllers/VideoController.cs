@@ -100,11 +100,23 @@ public class VideoController : Controller
     [HttpPut("channels/{channelId}")]
     public ActionResult UpdateChannelVideos(string channelId)
     {
-        var ch = m_service.GetChannel(channelId);
-        if (ch is null)
-            return NotFound();
+        if (channelId == "all")
+        {
+            var channels = m_service.GetAllChannels();
+            foreach (var ch in channels)
+            {
+                m_service.UpdateChannelSubscriptions(ch);
+            }
+        }
+        else
+        {
+            var ch = m_service.GetChannel(channelId);
+            if (ch is null)
+                return NotFound();
 
-        m_service.UpdateChannelSubscriptions(ch);
+            m_service.UpdateChannelSubscriptions(ch);
+        }
+
         return Ok();
     }
 
