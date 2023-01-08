@@ -62,12 +62,21 @@ public class VideoController : Controller
     [HttpGet("test")]
     public ActionResult TestQuery()
     {
-        ViewData["Test"] = "Hello, world!";
         var videos = m_service.VideoQuery(VideoType.Subscription, "all", SortType.DateDescending);
         if (videos is null)
             return NotFound();
 
         return View("./ChronologicalVideos", videos);
+    }
+
+    [HttpGet("test2")]
+    public ActionResult TestQuery2()
+    {
+        var channels = m_service.GetAllChannels().ToList();
+        if (channels is null)
+            return NotFound();
+
+        return View("./ByChannelVideos", channels);
     }
 
     // TODO: these URLs are getting lengthy

@@ -1,0 +1,53 @@
+@{
+  Layout = "/Views/_Layout.cshtml"; // root path is the project root
+}
+
+@model List<youtube_feed_asp.Models.Channel>
+
+<h1>Subscriptions</h1>
+
+@foreach (var channel in Model)
+{
+  <h2>@channel.Name — @channel.ChannelId</h2>
+  <button class="btn btn-primary" onclick="update_channel_subscriptions('@channel.ChannelId')">Update subscriptions</button>
+
+  @if (channel.Videos.Count != 0)
+  {
+    <table class="table table-striped table-dark">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col">Video</th>
+          <th scope="col">Publishing Time</th>
+        </tr>
+      </thead>
+      <tbody>
+      @foreach (var video in channel.Videos)
+      {
+        <tr id="@video.VideoId">
+          <td class="text-center">
+            <button onclick="return delete_video('@video.VideoId')" class="btn-close btn-close-white" ></button>
+          </td>
+          <td>
+            <a
+              target="_blank"
+              href="@video.Url"
+              onclick="return delete_video('@video.VideoId')"
+              onauxclick="return delete_video('@video.VideoId')"
+            >
+              @video.Title
+            </a>
+          </td>
+          <td>
+            @video.GetReadablePublishingTime()
+          </td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  }
+  else 
+  {
+    <p>No videos.</p>
+  }
+}
