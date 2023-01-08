@@ -47,6 +47,29 @@ public struct VideoResponse
     public string? Type { get; set; }
 }
 
+public class VideoModel
+{
+    public VideoModel(List<Video> videos, VideoType type)
+    {
+        Videos = videos;
+        Type = type;
+    }
+
+    public List<Video> Videos { get; private set; }
+    public VideoType Type { get; private set; }
+}
+
+public class ChannelModel
+{
+    public ChannelModel(List<Channel> channels, VideoType type)
+    {
+        Channels = channels;
+        Type = type;
+    }
+
+    public List<Channel> Channels { get; private set; }
+    public VideoType Type { get; private set; }
+}
 
 [ApiController]
 [Route("[controller]")]
@@ -62,21 +85,27 @@ public class VideoController : Controller
     [HttpGet("test")]
     public ActionResult TestQuery()
     {
-        var videos = m_service.VideoQuery(VideoType.Subscription, "all", SortType.DateDescending);
+        var type = VideoType.Subscription;
+
+        var videos = m_service.VideoQuery(type, "all", SortType.DateDescending);
         if (videos is null)
             return NotFound();
 
-        return View("./ChronologicalVideos", videos);
+        var model = new VideoModel(videos, type);
+        return View("./ChronologicalVideos", model);
     }
 
     [HttpGet("test2")]
     public ActionResult TestQuery2()
     {
-        var channels = m_service.ChannelQuery(VideoType.Subscription, "all", SortType.DateDescending);
+        var type = VideoType.Subscription;
+
+        var channels = m_service.ChannelQuery(type, "all", SortType.DateDescending);
         if (channels is null)
             return NotFound();
 
-        return View("./ByChannelVideos", channels);
+        var model = new ChannelModel(channels, type);
+        return View("./ByChannelVideos", model);
     }
 
     // TODO: these URLs are getting lengthy

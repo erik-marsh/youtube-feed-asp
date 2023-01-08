@@ -2,14 +2,24 @@
   Layout = "/Views/_Layout.cshtml"; // root path is the project root
 }
 
-@model List<youtube_feed_asp.Models.Channel>
+@model youtube_feed_asp.Controllers.ChannelModel
 
-<h1>Subscriptions</h1>
-
-@foreach (var channel in Model)
+@if (Model.Type == youtube_feed_asp.Models.VideoType.Subscription)
 {
-  <h2>@channel.Name — @channel.ChannelId</h2>
-  <button class="btn btn-primary" onclick="update_channel_subscriptions('@channel.ChannelId')">Update subscriptions</button>
+  <h1>Subscriptions</h1>
+}
+else
+{
+  <h1>Watch Later</h1>
+}
+
+@foreach (var channel in Model.Channels)
+{
+  <h2>@channel.Name</h2>
+  @if (Model.Type == youtube_feed_asp.Models.VideoType.Subscription)
+  {
+    <button class="btn btn-primary" onclick="update_channel_subscriptions('@channel.ChannelId')">Update subscriptions</button>
+  }
 
   @if (channel.Videos.Count != 0)
   {
@@ -18,7 +28,14 @@
         <tr>
           <th scope="col"></th>
           <th scope="col">Video</th>
-          <th scope="col">Publishing Time</th>
+          @if (Model.Type == youtube_feed_asp.Models.VideoType.Subscription)
+          {
+            <th scope="col">Publishing Time</th>
+          }
+          else
+          {
+            <th scope="col">Time Added</th>
+          }
         </tr>
       </thead>
       <tbody>

@@ -2,15 +2,23 @@
   Layout = "/Views/_Layout.cshtml"; // root path is the project root
 }
 
-@model List<youtube_feed_asp.Models.Video>
+@model youtube_feed_asp.Controllers.VideoModel
 
-<h1>Subscriptions</h1>
+@if (Model.Type == youtube_feed_asp.Models.VideoType.Subscription)
+{
+  <h1>Subscriptions</h1>
+  <button onclick="update_channel_subscriptions('all')" class="btn btn-primary">Update all subscriptions</button>
+  <div>
+    Add subscription: 
+    <input type="text" placeholder="Channel ID" id="add_subscription_field">
+    <button onclick="subscribe_to_channel()" class="btn btn-primary">Subscribe</button>
+  </div>
+}
+else
+{
+  <h1>Watch Later</h1>
+}
 
-<button onclick="update_channel_subscriptions('all')" class="btn btn-primary">Update all subscriptions</button>
-
-Add subscription: 
-<input type="text" placeholder="Channel ID" id="add_subscription_field">
-<button onclick="subscribe_to_channel()" class="btn btn-primary">Subscribe</button>
 
 <table class="table table-striped table-dark">
   <thead>
@@ -18,31 +26,38 @@ Add subscription:
       <th scope="col"></th>
       <th scope="col">Uploader</th>
       <th scope="col">Video</th>
-      <th scope="col">Publishing Time</th>
+      @if (Model.Type == youtube_feed_asp.Models.VideoType.Subscription)
+      {
+        <th scope="col">Publishing Time</th>
+      }
+      else
+      {
+        <th scope="col">Time Added</th>
+      }
     </tr>
   </thead>
   <tbody>
-    @for (int i = 0; i < Model.Count(); i++)
+    @foreach (var video in Model.Videos)
     {
-      <tr id="@Model[i].VideoId">
+      <tr id="@video.VideoId">
         <td class="text-center">
-          <button onclick="return delete_video('@Model[i].VideoId')" class="btn-close btn-close-white" ></button>
+          <button onclick="return delete_video('@video.VideoId')" class="btn-close btn-close-white" ></button>
         </td>
         <td>
-          <a href="@Model[i].Uploader.Url">@Model[i].Uploader.Name</a>
+          <a href="@video.Uploader.Url">@video.Uploader.Name</a>
         </td>
         <td>
           <a
             target="_blank"
-            href="@Model[i].Url"
-            onclick="return delete_video('@Model[i].VideoId')"
-            onauxclick="return delete_video('@Model[i].VideoId')"
+            href="@video.Url"
+            onclick="return delete_video('@video.VideoId')"
+            onauxclick="return delete_video('@video.VideoId')"
           >
-            @Model[i].Title
+            @video.Title
           </a>
         </td>
         <td>
-          @Model[i].GetReadablePublishingTime()
+          @video.GetReadablePublishingTime()
         </td>
       </tr>
     }
