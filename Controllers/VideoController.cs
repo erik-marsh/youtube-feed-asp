@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
+using youtube_feed_asp.Enums;
+using youtube_feed_asp.Helpers;
 using youtube_feed_asp.Models;
 using youtube_feed_asp.Services;
 
@@ -86,11 +88,7 @@ public class VideoController : Controller
     [HttpGet("{videoType}/by-date")]
     public ActionResult VideoPageChronological(string videoType)
     {
-        VideoType? parsedVideoType = videoType switch {
-            "subscriptions" => VideoType.Subscription,
-            "watch-later" => VideoType.WatchLater,
-            _ => null
-        };
+        VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
 
         if (parsedVideoType is null)
             return NotFound();
@@ -108,11 +106,7 @@ public class VideoController : Controller
     [HttpGet("{videoType}/by-channel")]
     public ActionResult VideoPageByChannel(string videoType)
     {
-        VideoType? parsedVideoType = videoType switch {
-            "subscriptions" => VideoType.Subscription,
-            "watch-later" => VideoType.WatchLater,
-            _ => null
-        };
+        VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
 
         if (parsedVideoType is null)
             return NotFound();

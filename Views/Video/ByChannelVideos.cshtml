@@ -4,7 +4,7 @@
 
 @model youtube_feed_asp.Controllers.ChannelModel
 
-@if (Model.Type == youtube_feed_asp.Models.VideoType.Subscription)
+@if (Model.Type == youtube_feed_asp.Enums.VideoType.Subscription)
 {
   <h1>Subscriptions</h1>
 }
@@ -16,7 +16,7 @@ else
 @foreach (var channel in Model.Channels)
 {
   <h2>@channel.Name</h2>
-  @if (Model.Type == youtube_feed_asp.Models.VideoType.Subscription)
+  @if (Model.Type == youtube_feed_asp.Enums.VideoType.Subscription)
   {
     <button class="btn btn-primary" onclick="update_channel_subscriptions('@channel.ChannelId')">Update subscriptions</button>
   }
@@ -28,7 +28,7 @@ else
         <tr>
           <th scope="col"></th>
           <th scope="col">Video</th>
-          @if (Model.Type == youtube_feed_asp.Models.VideoType.Subscription)
+          @if (Model.Type == youtube_feed_asp.Enums.VideoType.Subscription)
           {
             <th scope="col">Publishing Time</th>
           }

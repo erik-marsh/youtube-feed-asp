@@ -2,18 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Text.Json.Serialization;
+using youtube_feed_asp.Enums;
 
 namespace youtube_feed_asp.Models;
-
-/// <summary>
-/// Differentiates between different categories of videos.
-/// This avoids having to use separate tables to differentiate the categories.
-/// </summary>
-public enum VideoType
-{
-    Subscription = 0,
-    WatchLater = 1
-}
 
 public class Video
 {

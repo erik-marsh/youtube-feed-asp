@@ -1,20 +1,12 @@
 using youtube_feed_asp.Models;
 using youtube_feed_asp.Data;
+using youtube_feed_asp.Enums;
+using youtube_feed_asp.Helpers;
 using youtube_feed_asp.VideoScraper;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace youtube_feed_asp.Services;
-
-public enum SortType
-{
-    DateAscending,
-    DateDescending,
-    AddedAscending,
-    AddedDescending,
-    Channel,
-    None
-}
 
 public class VideoService
 {
@@ -50,20 +42,8 @@ public class VideoService
 
     public List<Video>? VideoQuery(string videoType, string channelId, string sortType)
     {
-        VideoType? parsedVideoType = videoType switch {
-            "subscriptions" => VideoType.Subscription,
-            "watch-later" => VideoType.WatchLater,
-            _ => null
-        };
-
-        SortType? parsedSortType = sortType switch {
-            "date-ascending" => SortType.DateAscending,
-            "date-descending" => SortType.DateDescending,
-            "added-ascending" => SortType.AddedAscending,
-            "added-descending" => SortType.AddedDescending,
-            "channel" => SortType.Channel,
-            _ => null 
-        };
+        VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
+        SortType? parsedSortType = Parsing.ParseSortType(sortType);
 
         Console.WriteLine($"VideoType == {parsedVideoType.ToString()}");
         Console.WriteLine($"SortType == {parsedSortType.ToString()}");
