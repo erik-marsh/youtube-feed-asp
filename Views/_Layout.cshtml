@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        @* Include Bootstrap *@
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-        <script src="/js/clickCallbacks.js"></script>
-    </head>
-    <body class="bg-dark text-white container-fluid">
-        @RenderBody()
-    </body>
+  <head>
+    @* Include Bootstrap *@
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="/js/clickCallbacks.js"></script>
+  </head>
+  <body class="bg-dark text-white container-fluid">
+    <header class="nav">
+      <a href="/Video/subscriptions/by-date"  class="nav-link text-secondary">By date</a>
+      <a href="/Video/subscriptions/by-channel" class="nav-link text-secondary">By channel</a>
+    </header>
+
+    @RenderBody()
+  </body>
 </html>
