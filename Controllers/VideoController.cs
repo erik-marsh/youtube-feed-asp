@@ -82,10 +82,20 @@ public class VideoController : Controller
         m_service = service;
     }
 
-    [HttpGet("test")]
-    public ActionResult TestQuery()
+    // TODO: add a tag to channels somehow that indicates whether or not they contain subscriptions, watch laters, or both
+    [HttpGet("{videoType}/by-date")]
+    public ActionResult VideoPageChronological(string videoType)
     {
-        var type = VideoType.Subscription;
+        VideoType? parsedVideoType = videoType switch {
+            "subscriptions" => VideoType.Subscription,
+            "watch-later" => VideoType.WatchLater,
+            _ => null
+        };
+
+        if (parsedVideoType is null)
+            return NotFound();
+
+        VideoType type = (VideoType) parsedVideoType;
 
         var videos = m_service.VideoQuery(type, "all", SortType.DateDescending);
         if (videos is null)
@@ -95,10 +105,19 @@ public class VideoController : Controller
         return View("./ChronologicalVideos", model);
     }
 
-    [HttpGet("test2")]
-    public ActionResult TestQuery2()
+    [HttpGet("{videoType}/by-channel")]
+    public ActionResult VideoPageByChannel(string videoType)
     {
-        var type = VideoType.Subscription;
+        VideoType? parsedVideoType = videoType switch {
+            "subscriptions" => VideoType.Subscription,
+            "watch-later" => VideoType.WatchLater,
+            _ => null
+        };
+
+        if (parsedVideoType is null)
+            return NotFound();
+
+        VideoType type = (VideoType) parsedVideoType;
 
         var channels = m_service.ChannelQuery(type, "all", SortType.DateDescending);
         if (channels is null)
