@@ -85,7 +85,7 @@ public class VideoController : Controller
     }
 
     // TODO: add a tag to channels somehow that indicates whether or not they contain subscriptions, watch laters, or both
-    [HttpGet("{videoType}/by-date")]
+    [HttpGet("views/{videoType}/by-date")]
     public ActionResult VideoPageChronological(string videoType)
     {
         VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
@@ -103,7 +103,7 @@ public class VideoController : Controller
         return View("./ChronologicalVideos", model);
     }
 
-    [HttpGet("{videoType}/by-channel")]
+    [HttpGet("views/{videoType}/by-channel")]
     public ActionResult VideoPageByChannel(string videoType)
     {
         VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
@@ -121,7 +121,6 @@ public class VideoController : Controller
         return View("./ByChannelVideos", model);
     }
 
-    // TODO: these URLs are getting lengthy
     [HttpGet("api/{videoType}/{channelId}/{sortType}")]
     public ActionResult<IEnumerable<VideoResponse>> ApiQuery(string videoType, string channelId, string sortType)
     {
@@ -134,134 +133,39 @@ public class VideoController : Controller
         return videos.Select(video => new VideoResponse(video)).ToList();
     }
 
-    [HttpPost("channels/{channelId}")]
+    [HttpPost("api/channels/{channelId}")]
     public ActionResult SubscribeToChannel(string channelId)
     {
         bool succeeded = m_service.SubscribeToChannel(channelId);
         return succeeded ? Ok() : BadRequest();
     }
 
-    [HttpDelete("channels/{channelId}")]
+    [HttpDelete("api/channels/{channelId}")]
     public ActionResult UnsubscribeFromChannel(string channelId)
     {
         bool succeeded = m_service.UnsubscribeFromChannel(channelId);
         return succeeded ? Ok() : NotFound();
     }
 
-    [HttpPut("channels/{channelId}")]
+    [HttpPut("api/channels/{channelId}")]
     public ActionResult UpdateChannelVideos(string channelId)
     {
         if (channelId == "all")
         {
-            var channels = m_service.GetAllChannels();
-            foreach (var ch in channels)
-            {
-                m_service.UpdateChannelSubscriptions(ch);
-            }
+            m_service.UpdateAllChannelSubscriptions();
+            return Ok();
         }
         else
         {
-            var ch = m_service.GetChannel(channelId);
-            if (ch is null)
-                return NotFound();
-
-            m_service.UpdateChannelSubscriptions(ch);
+            bool succeeded = m_service.UpdateChannelSubscriptions(channelId);
+            return succeeded ? Ok() : NotFound();
         }
-
-        return Ok();
     }
 
-    [HttpDelete("videos/{videoId}")]
+    [HttpDelete("api/videos/{videoId}")]
     public ActionResult RemoveVideo(string videoId)
     {
         bool succeeded = m_service.DeleteVideo(videoId);
         return succeeded ? Ok() : NotFound();
     }
-
-    // [HttpGet("videos")]
-    // public IEnumerable<VideoResponse> GetAllVideos()
-    // {
-    //     // when your return a POCO (plain old CLR object) like this, it is wrapped in an ObjectResult implicitly, then serialized
-    //     var videos = m_service.GetAllVideos();
-    //     var response = new List<VideoResponse>();
-    //     foreach (var v in videos)
-    //     {
-    //         response.Add(new VideoResponse(v));
-    //     }
-    //     return response;
-    // }
-
-    // [HttpGet("videos/{id}")]
-    // public ActionResult<VideoResponse> GetVideo(string id)
-    // {
-    //     var video = m_service.GetVideo(id);
-    //     if (video is null)
-    //         return NotFound(); // 404 Not Found
-    //     return new VideoResponse(video); // implicit 200 OK
-    // }
-
-    // [HttpGet("subscriptions")]
-    // public IEnumerable<VideoResponse> GetAllSubscriptions()
-    // {
-    //     var videos = m_service.GetAllVideosByType(VideoType.Subscription);
-    //     return videos.Select(video => new VideoResponse(video));
-    // }
-
-    // [HttpGet("watch-later")]
-    // public IEnumerable<VideoResponse> GetAllWatchLaters()
-    // {
-    //     var videos = m_service.GetAllVideosByType(VideoType.WatchLater);
-    //     return videos.Select(video => new VideoResponse(video));
-    // }
-
-    // // TODO: the videos within a channel response do not get turned into VideoResponses,
-    // // hence the enums do not appear as text, just an int
-    // [HttpGet("channels")]
-    // public IEnumerable<Channel> GetAllChannels()
-    // {
-    //     return m_service.GetAllChannels();
-    // }
-
-    // [HttpPut("channels")]
-    // public ActionResult UpdateAllChannels()
-    // {
-    //     var channels = m_service.GetAllChannels();// as List<Channel>;
-    //     foreach (var ch in channels)
-    //     {
-    //         m_service.UpdateChannelSubscriptions(ch);
-    //     }
-    //     return Ok();
-    // }
-
-    // [HttpPut("channels/{id}")]
-    // public ActionResult UpdateChannel(Channel ch)
-    // {
-    //     // TODO: need to distinguish between channels that exist and channels that don't exists with a 200 and 404 respectively
-    //     m_service.UpdateChannelSubscriptions(ch);
-    //     return Ok();
-    // }
-
-    // [HttpGet("channels/{id}")]
-    // public ActionResult<Channel> GetChannel(string id)
-    // {
-    //     var channel = m_service.GetChannel(id);
-    //     if (channel is null)
-    //         return NotFound();
-        
-    //     return channel;
-    // }
-
-    // [HttpGet("channels/{id}/subscriptions")]
-    // public IEnumerable<VideoResponse> GetChannelSubscriptions(string id)
-    // {
-    //     return m_service.GetChannelVideosByType(id, VideoType.Subscription)
-    //         .Select(video => new VideoResponse(video));
-    // }
-
-    // [HttpGet("channels/{id}/watch-later")]
-    // public IEnumerable<VideoResponse> GetChannelWatchLaters(string id)
-    // {
-    //     return m_service.GetChannelVideosByType(id, VideoType.WatchLater)
-    //         .Select(video => new VideoResponse(video));
-    // }
 }
