@@ -74,7 +74,6 @@ public class ChannelModel
 }
 
 [ApiController]
-[Route("[controller]")]
 public class VideoController : Controller
 {
     private VideoService m_service;
@@ -84,7 +83,9 @@ public class VideoController : Controller
         m_service = service;
     }
 
-    // TODO: add a tag to channels somehow that indicates whether or not they contain subscriptions, watch laters, or both
+    [HttpGet("/")]
+    public ActionResult Index() => Redirect("views/subscriptions/by-date");
+
     [HttpGet("views/{videoType}/by-date")]
     public ActionResult VideoPageChronological(string videoType)
     {
