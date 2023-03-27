@@ -12,9 +12,11 @@ namespace youtube_feed_asp.Migrations
                 name: "Channels",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ChannelId = table.Column<string>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    LastModified = table.Column<int>(type: "INTEGER", nullable: false)
+                    LastModified = table.Column<long>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -25,11 +27,13 @@ namespace youtube_feed_asp.Migrations
                 name: "Videos",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    UploaderId = table.Column<string>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    VideoId = table.Column<string>(type: "TEXT", nullable: false),
+                    UploaderId = table.Column<int>(type: "INTEGER", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
-                    TimePublished = table.Column<int>(type: "INTEGER", nullable: false),
-                    TimeAdded = table.Column<int>(type: "INTEGER", nullable: false),
+                    TimePublished = table.Column<long>(type: "INTEGER", nullable: false),
+                    TimeAdded = table.Column<long>(type: "INTEGER", nullable: false),
                     Type = table.Column<int>(type: "varchar(30)", nullable: true)
                 },
                 constraints: table =>

@@ -10,7 +10,7 @@ using youtube_feed_asp.Data;
 namespace youtube_feed_asp.Migrations
 {
     [DbContext(typeof(VideoContext))]
-    [Migration("20220905001626_InitialModel")]
+    [Migration("20221230200833_InitialModel")]
     partial class InitialModel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,10 +20,15 @@ namespace youtube_feed_asp.Migrations
 
             modelBuilder.Entity("youtube_feed_asp.Models.Channel", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ChannelId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("LastModified")
+                    b.Property<long>("LastModified")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -37,13 +42,14 @@ namespace youtube_feed_asp.Migrations
 
             modelBuilder.Entity("youtube_feed_asp.Models.Video", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("TimeAdded")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TimePublished")
+                    b.Property<long>("TimeAdded")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("TimePublished")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
@@ -53,7 +59,10 @@ namespace youtube_feed_asp.Migrations
                     b.Property<int?>("Type")
                         .HasColumnType("varchar(30)");
 
-                    b.Property<string>("UploaderId")
+                    b.Property<int>("UploaderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("VideoId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
