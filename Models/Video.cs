@@ -21,20 +21,21 @@ public class Video
     /// Regardless, this field will probably prove to be more necessary over time,
     /// since (as far as I can tell) the RSS feed system YouTube provides is deprecated.</para>
     /// </remarks>
+    [Key, Required]
     public int Id { get; set; }
 
     /// <summary>
     /// The Base64 ID for the video.
     /// </summary>
     [Required]
-    public string? VideoId { get; set; }
+    public string VideoId { get; set; } = "";
 
     /// <summary>
     /// The channel that the video was uploaded by.
     /// </summary>
     [Required]
     [JsonIgnore]
-    public Channel? Uploader { get; set; }
+    public Channel Uploader { get; set; } = new();
 
     /// <summary>
     /// The title of the video.
@@ -43,7 +44,7 @@ public class Video
     /// This will not track changes in the title of the video.
     /// </remarks>
     [Required]
-    public string? Title { get; set; }
+    public string Title { get; set; } = "";
 
     /// <summary>
     /// Unix timestamp representing the time that the video was uploaded.
@@ -60,8 +61,8 @@ public class Video
     /// <summary>
     /// The type of the video, used to differentiate between different video feeds provided by this software.
     /// </summary>
-    [Column(TypeName = "varchar(30)")]
-    public VideoType? Type { get; set; }
+    [Required, Column(TypeName = "varchar(30)")]
+    public VideoType Type { get; set; }
 
     /// <summary>
     /// Returns the URL that points to the video.

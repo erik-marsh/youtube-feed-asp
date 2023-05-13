@@ -11,6 +11,7 @@ public class Channel
     /// <remarks>
     /// The ASP.net EF Core implementation will auto-increment this value by default.
     /// </remarks>
+    [Key, Required]
     public int Id { get; set; }
 
     /// <summary>
@@ -21,13 +22,13 @@ public class Channel
     /// It still exists, however, and is hidden within the HTML source of the channel page.
     /// </remarks>
     [Required]
-    public string? ChannelId { get; set; }
+    public string ChannelId { get; set; } = "";
 
     /// <summary>
     /// The name of the channel.
     /// </summary>
     [Required]
-    public string? Name { get; set; }
+    public string Name { get; set; } = "";
 
     /// <summary>
     /// Unix timestamp representing the last time the channel uploaded a video.
@@ -38,7 +39,7 @@ public class Channel
     /// <summary>
     /// A list of videos associated with the channel.
     /// </summary>
-    public ICollection<Video>? Videos { get; set; }
+    public ICollection<Video> Videos { get; set; } = new List<Video>();
 
     /// <summary>
     /// Returns the canonical URL that points to the channel.
