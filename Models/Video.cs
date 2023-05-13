@@ -13,7 +13,6 @@ public class Video
     /// </summary>
     /// <remarks>
     /// <para>The ASP.net EF Core implementation will auto-increment this value by default.</para>
-    /// 
     /// <para>In a previous version of this software, I used the video ID as the primary key.
     /// This, in theory, would work, but I eventually ran into situations where the video ID was not unique.
     /// I'm not entirely sure why this is the case, but I suspect it has something to do with the videos being
@@ -45,7 +44,6 @@ public class Video
     /// </remarks>
     [Required]
     public string? Title { get; set; }
-
 
     /// <summary>
     /// Unix timestamp representing the time that the video was uploaded.

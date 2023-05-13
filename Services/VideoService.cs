@@ -10,8 +10,6 @@ namespace youtube_feed_asp.Services;
 
 public class VideoService
 {
-    private const string s_rssBaseUrl = "https://www.youtube.com/feeds/videos.xml?channel_id=";
-
     private readonly VideoContext m_context;
 
     public VideoService(VideoContext context)
@@ -19,25 +17,17 @@ public class VideoService
         m_context = context;
     }
 
-
     private static List<Video> SortVideosBy(List<Video> list, SortType sortType)
     {
-        switch (sortType)
+        return sortType switch
         {
-        case SortType.DateAscending:
-            return list.OrderBy(video => video.TimePublished).ToList();
-        case SortType.DateDescending:
-            return list.OrderByDescending(video => video.TimePublished).ToList();
-        case SortType.AddedAscending:
-            return list.OrderBy(video => video.TimeAdded).ToList();
-        case SortType.AddedDescending:
-            return list.OrderByDescending(video => video.TimeAdded).ToList();
-        case SortType.Channel:
-            return list.OrderBy(video => video.Uploader.ChannelId).ToList();
-        case SortType.None:
-        default:
-            return list;
-        }
+            SortType.DateAscending => list.OrderBy(video => video.TimePublished).ToList(),
+            SortType.DateDescending => list.OrderByDescending(video => video.TimePublished).ToList(),
+            SortType.AddedAscending => list.OrderBy(video => video.TimeAdded).ToList(),
+            SortType.AddedDescending => list.OrderByDescending(video => video.TimeAdded).ToList(),
+            SortType.Channel => list.OrderBy(video => video.Uploader.ChannelId).ToList(),
+            _ => list,
+        };
     }
 
     public List<Video>? VideoQuery(string videoType, string channelId, string sortType)
@@ -45,15 +35,15 @@ public class VideoService
         VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
         SortType? parsedSortType = Parsing.ParseSortType(sortType);
 
-        Console.WriteLine($"VideoType == {parsedVideoType.ToString()}");
-        Console.WriteLine($"SortType == {parsedSortType.ToString()}");
+        Console.WriteLine($"VideoType == {parsedVideoType}");
+        Console.WriteLine($"SortType == {parsedSortType}");
 
         if (parsedSortType is null || parsedVideoType is null)
             return null;
-        
+
         // TODO: there has to be a better way
-        VideoType type = (VideoType) parsedVideoType;
-        SortType sort = (SortType) parsedSortType;
+        VideoType type = (VideoType)parsedVideoType;
+        SortType sort = (SortType)parsedSortType;
 
         return VideoQuery(type, channelId, sort);
     }
@@ -104,7 +94,7 @@ public class VideoService
 
         if (ch is null)
             throw new ArgumentException($"Channel ID {channelId} not found.");
-        
+
         var filteredVideos = ch.Videos
             .Where(video => video.Type == videoType)
             .ToList();
@@ -119,7 +109,7 @@ public class VideoService
             var res = m_context.Channels
                 .Include(channel => channel.Videos)
                 .AsNoTracking();
-            
+
             channels.AddRange(res);
         }
         else
@@ -128,10 +118,10 @@ public class VideoService
                 .Include(channel => channel.Videos)
                 .AsNoTracking()
                 .SingleOrDefault(channel => channel.ChannelId == channelId);
-            
+
             if (ch is null)
                 return null;
-            
+
             channels.Add(ch);
         }
 
@@ -170,7 +160,7 @@ public class VideoService
             Console.WriteLine($"Unable to subscribe to channel {channelId}: an error occurred scraping the channel info.");
             return false;
         }
-        
+
         m_context.Channels.Add(ch);
         m_context.SaveChanges();
 
@@ -230,7 +220,7 @@ public class VideoService
         // in the documentation for Video, I note that there is weridness
         // with YouTube premieres/etc that make video IDs non-unique
         var videos = m_context.Videos.Where(video => video.VideoId == id);
-        if (videos.Count() == 0)
+        if (!videos.Any())
         {
             Console.WriteLine($"Could not delete video {id} from the database because it does not exist in the database.");
             return false;
@@ -242,7 +232,6 @@ public class VideoService
         Console.WriteLine($"Successfully deleted video {id} from the database.");
         return true;
     }
-
 
     //==============================================================================
     // Channel Database Methods
@@ -283,7 +272,7 @@ public class VideoService
         var channel = GetChannel(id);
         if (channel is null || channel.Videos is null)
             return new List<Video>(); // empty list
-        
+
         return channel.Videos.Where(video => video.Type == type);
     }
 
@@ -306,7 +295,7 @@ public class VideoService
             Console.WriteLine($"Could not update subscriptions for channel {channelId} because it does not exist in the database.");
             return false;
         }
-        
+
         UpdateChannelSubscriptions(ch);
         Console.WriteLine($"Successfully updated subscriptions for channel {channelId}.");
         return true;

@@ -34,7 +34,7 @@ public class Channel
     /// </summary>
     [Required]
     public long LastModified { get; set; }
- 
+
     /// <summary>
     /// A list of videos associated with the channel.
     /// </summary>

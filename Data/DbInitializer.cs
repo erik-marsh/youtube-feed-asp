@@ -13,38 +13,41 @@ public static class DbInitializer
 
     public static void InitializeWithOnlyChannels(VideoContext context)
     {
-        if (context.Channels.Count() != 0) return;
+        if (context.Channels.Any()) return;
 
-        var channels = new List<Channel>();
+        var channels = new List<Channel>
+        {
+            new Channel
+            {
+                ChannelId = "UCqms1E3UhFpC0RRxZQNF-ag",
+                Name = "fuopy",
+                LastModified = 0
+            },
+            new Channel
+            {
+                ChannelId = "UCSPLhwvj0gBufjDRzSQb3GQ",
+                Name = "BobbyBroccoli",
+                LastModified = 0,
+                Videos = new List<Video>()
+            },
+            new Channel
+            {
+                ChannelId = "UCLrno_gfh32wX4I8-6qV4Wg",
+                Name = "Running Shine",
+                LastModified = 0,
+                Videos = new List<Video>()
+            },
+            new Channel
+            {
+                ChannelId = "UCBn6YYmhnruGtEtlKxYbQ9A",
+                Name = "K Klein",
+                LastModified = 0,
+                Videos = new List<Video>()
+            }
+        };
 
-        channels.Add(new Channel {
-            ChannelId = "UCqms1E3UhFpC0RRxZQNF-ag",
-            Name = "fuopy",
-            LastModified = 0
-        });
-
-        channels.Add(new Channel {
-            ChannelId = "UCSPLhwvj0gBufjDRzSQb3GQ",
-            Name = "BobbyBroccoli",
-            LastModified = 0,
-            Videos = new List<Video>()
-        });
-
-        channels.Add(new Channel {
-            ChannelId = "UCLrno_gfh32wX4I8-6qV4Wg",
-            Name = "Running Shine",
-            LastModified = 0,
-            Videos = new List<Video>()
-        });
-
-        channels.Add(new Channel {
-            ChannelId = "UCBn6YYmhnruGtEtlKxYbQ9A",
-            Name = "K Klein",
-            LastModified = 0,
-            Videos = new List<Video>()
-        });
-
-        var test = new Channel {
+        var test = new Channel
+        {
             ChannelId = "UCuvSqzfO_LV_QzHdmEj84SQ",
             Name = "watchlater",
             LastModified = 0,

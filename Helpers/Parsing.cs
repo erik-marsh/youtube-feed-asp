@@ -32,6 +32,6 @@ public static class Parsing
         "added-ascending" => SortType.AddedAscending,
         "added-descending" => SortType.AddedDescending,
         "channel" => SortType.Channel,
-        _ => null 
+        _ => null
     };
 }

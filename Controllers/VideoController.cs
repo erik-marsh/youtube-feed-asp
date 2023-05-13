@@ -57,8 +57,8 @@ public class VideoModel
         Type = type;
     }
 
-    public List<Video> Videos { get; private set; }
-    public VideoType Type { get; private set; }
+    public List<Video> Videos { get; }
+    public VideoType Type { get; }
 }
 
 public class ChannelModel
@@ -69,14 +69,14 @@ public class ChannelModel
         Type = type;
     }
 
-    public List<Channel> Channels { get; private set; }
-    public VideoType Type { get; private set; }
+    public List<Channel> Channels { get; }
+    public VideoType Type { get; }
 }
 
 [ApiController]
 public class VideoController : Controller
 {
-    private VideoService m_service;
+    private readonly VideoService m_service;
 
     public VideoController(VideoService service)
     {
@@ -94,7 +94,7 @@ public class VideoController : Controller
         if (parsedVideoType is null)
             return NotFound();
 
-        VideoType type = (VideoType) parsedVideoType;
+        VideoType type = (VideoType)parsedVideoType;
 
         var videos = m_service.VideoQuery(type, "all", SortType.DateDescending);
         if (videos is null)
@@ -112,7 +112,7 @@ public class VideoController : Controller
         if (parsedVideoType is null)
             return NotFound();
 
-        VideoType type = (VideoType) parsedVideoType;
+        VideoType type = (VideoType)parsedVideoType;
 
         var channels = m_service.ChannelQuery(type, "all", SortType.DateDescending);
         if (channels is null)
@@ -131,7 +131,7 @@ public class VideoController : Controller
 
         // ToList is required because the implicit conversion to an ActionResult must happen on a concrete type
         // ... i think is the reasoning
-        return videos.Select(video => new VideoResponse(video)).ToList();
+        return videos.ConvertAll(video => new VideoResponse(video));
     }
 
     [HttpPost("api/channels/{channelId}")]

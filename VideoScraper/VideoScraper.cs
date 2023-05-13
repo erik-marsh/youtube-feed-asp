@@ -18,7 +18,7 @@ public static class VideoScraper
 
         if (ch is null)
         {
-            Console.WriteLine($"Attempted to update channel that does not exist in the database. Abort.");
+            Console.WriteLine("Attempted to update channel that does not exist in the database. Abort.");
             return new List<Video>();
         }
 
@@ -32,7 +32,6 @@ public static class VideoScraper
 
         Console.WriteLine($"Updating channel: {feed.Title.Text} ({ch.ChannelId}) (last modified at {ch.LastModified})");
 
-
         feedParsingTimer.Start();
         // reverse iteration because the videos are ordered newest to oldest
         // and we want to incrementally update the LastModified field
@@ -44,7 +43,8 @@ public static class VideoScraper
             {
                 ch.LastModified = (int)videoPublished;
 
-                var v = new Video() {
+                var v = new Video()
+                {
                     VideoId = GetVideoId(feedVideos[i]),
                     Uploader = ch,
                     Title = feedVideos[i].Title.Text,
@@ -80,7 +80,8 @@ public static class VideoScraper
         try
         {
             var feed = GetChannelRSSFeed(channelId);
-            return new Channel {
+            return new Channel
+            {
                 ChannelId = channelId,
                 Name = feed.Title.Text,
                 LastModified = 0,
@@ -120,5 +121,4 @@ public static class VideoScraper
         var extensionObject = item.ElementExtensions.Single(x => x.OuterName == "videoId");
         return extensionObject.GetObject<XElement>().Value;
     }
-
 }
