@@ -2,7 +2,7 @@ using youtube_feed_asp.Models;
 using youtube_feed_asp.Data;
 using youtube_feed_asp.Enums;
 using youtube_feed_asp.Helpers;
-using youtube_feed_asp.VideoScraper;
+using youtube_feed_asp.Scrapers;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
@@ -154,7 +154,7 @@ public class VideoService
             return false;
         }
 
-        ch = VideoScraper.VideoScraper.GetChannelFromID(channelId);
+        ch = RssScraper.GetChannelFromID(channelId);
         if (ch is null)
         {
             Console.WriteLine($"Unable to subscribe to channel {channelId}: an error occurred scraping the channel info.");
@@ -304,7 +304,7 @@ public class VideoService
     // TODO: need to make sure this doesn't block super hard when waiting for the HTTP request for the feed to resolve
     private void UpdateChannelSubscriptions(Channel ch)
     {
-        var newVideos = VideoScraper.VideoScraper.UpdateChannelSubscriptions(ch);
+        var newVideos = RssScraper.UpdateChannelSubscriptions(ch);
         if (newVideos.Count == 0) return;
 
         var databaseWriteTimer = new Stopwatch();

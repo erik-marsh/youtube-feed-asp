@@ -1,6 +1,6 @@
 using youtube_feed_asp.Enums;
 using youtube_feed_asp.Models;
-using youtube_feed_asp.VideoScraper;
+using youtube_feed_asp.Scrapers;
 
 namespace youtube_feed_asp.Data;
 
@@ -58,7 +58,7 @@ public static class DbInitializer
 
         foreach (var ch in channels)
         {
-            var newVideos = VideoScraper.VideoScraper.UpdateChannelSubscriptions(ch);
+            var newVideos = RssScraper.UpdateChannelSubscriptions(ch);
             context.Videos.AttachRange(newVideos);
             // context.Entry(ch)
             //     .Property(x => x.LastModified)

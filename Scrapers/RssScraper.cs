@@ -5,9 +5,9 @@ using System.ServiceModel.Syndication;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace youtube_feed_asp.VideoScraper;
+namespace youtube_feed_asp.Scrapers;
 
-public static class VideoScraper
+public static class RssScraper
 {
     private const string s_rssBaseUrl = "https://www.youtube.com/feeds/videos.xml?channel_id=";
 
@@ -65,7 +65,6 @@ public static class VideoScraper
         return newVideos;
     }
 
-    // TODO: this is no longer a VideoScraper, more like an RSS scraper
     /// <summary>
     /// Constructs a Channel object from a channel ID.
     /// </summary>
@@ -98,7 +97,7 @@ public static class VideoScraper
     /// <summary>
     /// Fetches the RSS feed associated with a certain channel and returns it.
     /// </summary>
-    private static SyndicationFeed GetChannelRSSFeed(string channelId)
+    public static SyndicationFeed GetChannelRSSFeed(string channelId)
     {
         string rssUrl = s_rssBaseUrl + channelId;
         var reader = XmlReader.Create(rssUrl);
@@ -116,9 +115,19 @@ public static class VideoScraper
     /// I think it's better for the application to crash here, since this is a critical error.
     /// Not having access to YouTube video IDs renders this entire application useless.
     /// </exception>
-    private static string GetVideoId(SyndicationItem item)
+    public static string GetVideoId(SyndicationItem item)
     {
         var extensionObject = item.ElementExtensions.Single(x => x.OuterName == "videoId");
         return extensionObject.GetObject<XElement>().Value;
+    }
+
+    public static string GetVideoTitle(SyndicationItem item)
+    {
+        return item.Title.Text;
+    }
+
+    public static int GetVideoPublishTime(SyndicationItem item)
+    {
+        return (int)item.PublishDate.ToUnixTimeSeconds();
     }
 }
