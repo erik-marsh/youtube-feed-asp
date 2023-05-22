@@ -65,10 +65,19 @@ public class Video
     public VideoType Type { get; set; }
 
     /// <summary>
+    /// The duration of the video, in seconds.
+    /// </summary>
+    [Required]
+    public long LengthSeconds;
+
+    /// <summary>
     /// Returns the URL that points to the video.
     /// </summary>
     [NotMapped]
     public string Url => $"https://www.youtube.com/watch?v={VideoId}";
+
+    [NotMapped]
+    public string ThumbnailUrl => $"https://i.ytimg.com/vi/{VideoId}/maxresdefault.jpg";
 
     /// <summary>
     /// Returns a human-readable form of the upload time.
