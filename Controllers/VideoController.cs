@@ -40,13 +40,13 @@ public struct VideoResponse
         TimeAdded = added.ToString("u", CultureInfo.InvariantCulture);
     }
 
-    public string? Id { get; set; }
-    public string? UploaderId { get; set; }
-    public string? UploaderName { get; set; }
-    public string? Title { get; set; }
-    public string? TimePublished { get; set; }
-    public string? TimeAdded { get; set; }
-    public string? Type { get; set; }
+    public string Id { get; set; }
+    public string UploaderId { get; set; }
+    public string UploaderName { get; set; }
+    public string Title { get; set; }
+    public string TimePublished { get; set; }
+    public string TimeAdded { get; set; }
+    public string Type { get; set; }
 }
 
 public class VideoModel
