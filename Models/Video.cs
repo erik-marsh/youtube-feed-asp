@@ -68,7 +68,7 @@ public class Video
     /// The duration of the video, in seconds.
     /// </summary>
     [Required]
-    public long LengthSeconds;
+    public long LengthSeconds { get; set; }
 
     /// <summary>
     /// Returns the URL that points to the video.
