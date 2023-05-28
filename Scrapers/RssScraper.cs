@@ -9,7 +9,44 @@ namespace youtube_feed_asp.Scrapers;
 
 public static class RssScraper
 {
+    public struct Result
+    {
+        public string VideoId;
+        public string Title;
+        public int TimePublished;
+        public int TimeAdded;
+    }
+
     private const string s_rssBaseUrl = "https://www.youtube.com/feeds/videos.xml?channel_id=";
+
+    /// <summary>
+    /// Retrieves information about the latest 15 videos from a YouTube channel.
+    /// </summary>
+    /// <param name="channelId">The channel ID to fetch new videos from.</param>
+    /// <returns>A list of RSS results, ordered from oldest to newest.</returns>
+    public static List<Result> Scrape(string channelId)
+    {
+        var feed = GetChannelRSSFeed(channelId);
+        var feedVideos = feed.Items.ToList();
+        var result = new List<Result>();
+
+        // reverse iteration because the videos are ordered newest to oldest
+        // and we want to incrementally update the LastModified field
+        for (int i = feedVideos.Count - 1; i >= 0; i--)
+        {
+            var video = feedVideos[i];
+            var videoInfo = new Result()
+            {
+                VideoId = GetVideoId(video),
+                Title = video.Title.Text,
+                TimePublished = (int)video.PublishDate.ToUnixTimeSeconds(),
+                TimeAdded = (int)DateTimeOffset.Now.ToUnixTimeSeconds()
+            };
+            result.Add(videoInfo);
+        }
+
+        return result;
+    }
 
     public static List<Video> UpdateChannelSubscriptions(Channel ch)
     {
@@ -115,19 +152,9 @@ public static class RssScraper
     /// I think it's better for the application to crash here, since this is a critical error.
     /// Not having access to YouTube video IDs renders this entire application useless.
     /// </exception>
-    public static string GetVideoId(SyndicationItem item)
+    private static string GetVideoId(SyndicationItem item)
     {
         var extensionObject = item.ElementExtensions.Single(x => x.OuterName == "videoId");
         return extensionObject.GetObject<XElement>().Value;
-    }
-
-    public static string GetVideoTitle(SyndicationItem item)
-    {
-        return item.Title.Text;
-    }
-
-    public static int GetVideoPublishTime(SyndicationItem item)
-    {
-        return (int)item.PublishDate.ToUnixTimeSeconds();
     }
 }

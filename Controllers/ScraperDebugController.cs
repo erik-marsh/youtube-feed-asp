@@ -27,28 +27,6 @@ namespace youtube_feed_asp.Controllers;
 [ApiController]
 public class ScraperDebugController : Controller
 {
-    [HttpGet("get-channel-rss/{channelId}")]
-    public ActionResult<IEnumerable<VideoResponse>> GetVideosFromChannelRSSFeed(string channelId)
-    {
-        var feed = RssScraper.GetChannelRSSFeed(channelId);
-        var feedVideos = feed.Items.ToList();
-        var videos = new List<Video>();
-        for (int i = feedVideos.Count - 1; i >= 0; i--)
-        {
-            videos.Add(new Video()
-            {
-                VideoId = RssScraper.GetVideoId(feedVideos[i]),
-                Uploader = new Channel(),
-                Title = feedVideos[i].Title.Text,
-                TimePublished = feedVideos[i].PublishDate.ToUnixTimeSeconds(),
-                TimeAdded = (int)DateTimeOffset.Now.ToUnixTimeSeconds(),
-                Type = Enums.VideoType.Subscription
-            });
-        }
-
-        return videos.ConvertAll(video => new VideoResponse(video));
-    }
-
     [HttpGet("get-video-details/{videoId}")]
     public ActionResult<VideoScraper.Result> GetVideoDetails(string videoId) => VideoScraper.Scrape(videoId);
 
@@ -56,4 +34,7 @@ public class ScraperDebugController : Controller
     // there is a javascript method for this so its no big deal
     [HttpGet("get-channel-details/{channelUrl}")]
     public ActionResult<ChannelScraper.Result> GetChannelDetails(string channelUrl) => ChannelScraper.Scrape(System.Web.HttpUtility.UrlDecode(channelUrl));
+
+    [HttpGet("get-channel-rss/{channelId}")]
+    public ActionResult<IEnumerable<RssScraper.Result>> GetChannelRss(string channelId) => RssScraper.Scrape(channelId);
 }
