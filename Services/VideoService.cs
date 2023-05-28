@@ -301,14 +301,39 @@ public class VideoService
         return true;
     }
 
-    // TODO: need to make sure this doesn't block super hard when waiting for the HTTP request for the feed to resolve
+    // TODO: need to make sure this doesn't block super hard when waiting for the HTTP requests
     private void UpdateChannelSubscriptions(Channel ch)
     {
-        var newVideos = RssScraper.UpdateChannelSubscriptions(ch);
-        if (newVideos.Count == 0) return;
+        // update subscriptions from the RSS feed
+        List<RssScraper.Result> rssVideos = RssScraper.Scrape(ch.ChannelId);
 
-        var databaseWriteTimer = new Stopwatch();
-        databaseWriteTimer.Start();
+        // discard videos that we have already parsed in the past
+        Console.WriteLine($"Last modified at {ch.LastModified}");
+        rssVideos = rssVideos.Where(rssVideo => rssVideo.TimePublished > ch.LastModified).ToList();
+
+        var newVideos = new List<Video>();
+
+        foreach (var rssResponse in rssVideos)
+        {
+            Console.WriteLine($"    uploaded={rssResponse.TimePublished}");
+            var videoResponse = VideoScraper.Scrape(rssResponse.VideoId);
+
+            newVideos.Add(new Video()
+            {
+                VideoId = rssResponse.VideoId,
+                Uploader = ch,
+                Title = rssResponse.Title,
+                TimePublished = rssResponse.TimePublished,
+                TimeAdded = (int)DateTimeOffset.Now.ToUnixTimeSeconds(),
+                Type = VideoType.Subscription,
+                LengthSeconds = videoResponse.LengthSeconds
+            });
+
+            // rssVideos should be in the correct order for the assignment to be correct,
+            // but here's a sanity check anyway
+            if (ch.LastModified < rssResponse.TimePublished)
+                ch.LastModified = rssResponse.TimePublished;
+        }
 
         // see https://stackoverflow.com/questions/66017750/ef-core-3-1-re-inserting-existing-navigational-property-when-adding-new-entity
         // if we did AddRange, it would attempt to re-insert the Channel as well (because it was marked as Added)
@@ -326,8 +351,5 @@ public class VideoService
             .Property(x => x.LastModified)
             .IsModified = true;
         m_context.SaveChanges();
-
-        databaseWriteTimer.Stop();
-        Console.WriteLine($"Wrote to database in {databaseWriteTimer.ElapsedMilliseconds}ms");
     }
 }

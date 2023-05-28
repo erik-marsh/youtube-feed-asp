@@ -14,7 +14,6 @@ public static class RssScraper
         public string VideoId;
         public string Title;
         public int TimePublished;
-        public int TimeAdded;
     }
 
     private const string s_rssBaseUrl = "https://www.youtube.com/feeds/videos.xml?channel_id=";
@@ -39,67 +38,12 @@ public static class RssScraper
             {
                 VideoId = GetVideoId(video),
                 Title = video.Title.Text,
-                TimePublished = (int)video.PublishDate.ToUnixTimeSeconds(),
-                TimeAdded = (int)DateTimeOffset.Now.ToUnixTimeSeconds()
+                TimePublished = (int)video.PublishDate.ToUnixTimeSeconds()
             };
             result.Add(videoInfo);
         }
 
         return result;
-    }
-
-    public static List<Video> UpdateChannelSubscriptions(Channel ch)
-    {
-        var httpRequestTimer = new Stopwatch();
-        var feedParsingTimer = new Stopwatch();
-
-        if (ch is null)
-        {
-            Console.WriteLine("Attempted to update channel that does not exist in the database. Abort.");
-            return new List<Video>();
-        }
-
-        httpRequestTimer.Start();
-        var feed = GetChannelRSSFeed(ch.ChannelId);
-        httpRequestTimer.Stop();
-        Console.WriteLine($"Retrieved RSS feed in {httpRequestTimer.ElapsedMilliseconds}ms");
-
-        var feedVideos = feed.Items.ToList();
-        var newVideos = new List<Video>();
-
-        Console.WriteLine($"Updating channel: {feed.Title.Text} ({ch.ChannelId}) (last modified at {ch.LastModified})");
-
-        feedParsingTimer.Start();
-        // reverse iteration because the videos are ordered newest to oldest
-        // and we want to incrementally update the LastModified field
-        for (int i = feedVideos.Count - 1; i >= 0; i--)
-        {
-            var videoPublished = feedVideos[i].PublishDate.ToUnixTimeSeconds();
-
-            if (videoPublished > ch.LastModified)
-            {
-                ch.LastModified = (int)videoPublished;
-
-                var v = new Video()
-                {
-                    VideoId = GetVideoId(feedVideos[i]),
-                    Uploader = ch,
-                    Title = feedVideos[i].Title.Text,
-                    TimePublished = (int)videoPublished,
-                    TimeAdded = (int)DateTimeOffset.Now.ToUnixTimeSeconds(),
-                    Type = VideoType.Subscription
-                };
-
-                newVideos.Add(v);
-            }
-        }
-
-        feedParsingTimer.Stop();
-        Console.WriteLine($"Parsed feed in {feedParsingTimer.ElapsedMilliseconds}ms");
-
-        Console.WriteLine($"{newVideos.Count} new videos added.");
-
-        return newVideos;
     }
 
     /// <summary>
