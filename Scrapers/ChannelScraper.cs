@@ -1,16 +1,3 @@
-// channel response page
-// there's a massive JSON response in this page containing the info we need
-// but its duplicated a million and a half times, because they're all related to channel videos
-// that sounds really annoying to parse, so i will try to avoid that
-
-// channel ID can be uniquely found with a search for /<link rel="canonical" href=/
-// channel handle can be uniquely found with /<link rel="alternate" media="handheld"/
-//     HOWEVER: this is a mobile link, so we need to strip out an initial m. from the url
-// channel name can be found with /<meta itemprop="name" content=/
-
-// there's another interesting thing called function serverContract() { ... } that also has all the info we need
-// but it's all javascript and i don't really want to parse that either
-
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Text.Json;
@@ -19,6 +6,9 @@ namespace youtube_feed_asp.Scrapers;
 
 public static class ChannelScraper
 {
+    /// <summary>
+    /// Information that is scrapable from a YouTube channel page.
+    /// </summary>
     public struct Result
     {
         public string ChannelId;
@@ -28,11 +18,28 @@ public static class ChannelScraper
 
     private readonly static HttpClient httpClient = new();
 
-    private static readonly Regex findChannelId = new("<link\\s+rel=\"canonical\"\\s+href=\"https://www.youtube.com/channel/([^>]*)\">", RegexOptions.Compiled);
-    private static readonly Regex findChannelHandle = new("<link\\s+rel=\"alternate\"\\s+media=\"handheld\"\\s+href=\"https://m.youtube.com/(@[^>]*)\">", RegexOptions.Compiled);
-    private static readonly Regex findChannelName = new("<meta\\s+itemprop=\"name\"\\s+content=\"([^>]*)\">", RegexOptions.Compiled);
+    private const string resultGroup = "result";
 
-    // The idea here is to retrieve the channel ID from any sort of URL to the channel.
+    /// <summary>
+    /// Searches a YouTube channel page for the channel's base64 ID.
+    /// </summary>
+    private static readonly Regex findChannelId = new($"<link\\s+rel=\"canonical\"\\s+href=\"https://www.youtube.com/channel/(?<{resultGroup}>[^>]*)\">", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Searches a YouTube channel page for the channel's handle.
+    /// TODO: This worked at some point but very quickly stopped working.
+    /// </summary>
+    private static readonly Regex findChannelHandle = new($"<link\\s+rel=\"alternate\"\\s+media=\"handheld\"\\s+href=\"https://m.youtube.com/(?<{resultGroup}>[^>]*)\">", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Searches a YouTube channel page for the channel's name.
+    /// </summary>
+    private static readonly Regex findChannelName = new($"<meta\\s+itemprop=\"name\"\\s+content=\"(?<{resultGroup}>[^>]*)\">", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Scrapes the channel ID, channel handle, and channel name from a YouTube channel URL.
+    /// </summary>
+    /// <param name="channelUrl">Any sort of URL that points to a YouTube channel.</param>
     public static Result Scrape(string channelUrl)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, channelUrl);
@@ -40,14 +47,14 @@ public static class ChannelScraper
         var textContent = response.Content.ReadAsStringAsync().Result;  // blocking
 
         var matchChannelId = findChannelId.Match(textContent);
-        var matchChannelHandle = findChannelHandle.Match(textContent);
+        //var matchChannelHandle = findChannelHandle.Match(textContent);
         var matchChannelName = findChannelName.Match(textContent);
 
         return new Result()
         {
-            ChannelId = matchChannelId.Groups[1].Value,
-            Handle = matchChannelHandle.Groups[1].Value,
-            Name = matchChannelName.Groups[1].Value
+            ChannelId = matchChannelId.Groups[resultGroup].Value,
+            Handle = "<no value, not implemented yet>", //matchChannelHandle.Groups[resultGroup].Value,
+            Name = matchChannelName.Groups[resultGroup].Value
         };
     }
 }
