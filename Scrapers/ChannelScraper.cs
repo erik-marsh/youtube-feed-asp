@@ -1,9 +1,10 @@
-using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Text.Json;
 
 namespace youtube_feed_asp.Scrapers;
 
+/// <summary>
+/// Collection of functionality that allows for scraping data from YouTube channel pages.
+/// </summary>
 public static class ChannelScraper
 {
     /// <summary>

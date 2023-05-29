@@ -1,11 +1,16 @@
-using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 
 namespace youtube_feed_asp.Scrapers;
 
+/// <summary>
+/// Collection of functionality that allows for scraping data from YouTube video pages.
+/// </summary>
 public static class VideoScraper
 {
+    /// <summary>
+    /// Information that is scrapable from a YouTube video page.
+    /// </summary>
     public struct Result
     {
         public string VideoId;
@@ -17,16 +22,14 @@ public static class VideoScraper
 
     private readonly static HttpClient httpClient = new();
 
-    // The raw response from a get request to the above url for any given video
-    // contains a script tag that a single JSON object named ytInitialPlayerResponse.
-    // This object contains a bunch of data and metadata for the video.
-    private readonly static Regex findYtInitialPlayerResponse = new(
-        @"<script[^>]*>" +  // open script tag, ignore any attributes
-        @"\s*var ytInitialPlayerResponse\s*=\s*" +  // this is the variable we are looking for
-        @"(.*)" +           // this group will contain the JSON string that we want to parse
-        @";</script>",      // and the ending of the script tag
-        RegexOptions.Compiled
-    );
+    private const string resultGroup = "result";
+
+    /// <summary>
+    /// The raw response from a get request to the above url for any given video
+    /// contains a script tag that a single JSON object named ytInitialPlayerResponse.
+    /// This object contains a bunch of data and metadata for the video that we want to scrape from.
+    /// </summary>
+    private readonly static Regex findYtInitialPlayerResponse = new($"<script[^>]*>\\s*var ytInitialPlayerResponse\\s*=\\s*(?<{resultGroup}>.*);</script>", RegexOptions.Compiled);
 
     public static Result Scrape(string videoId)
     {
@@ -38,10 +41,13 @@ public static class VideoScraper
 
         var match = findYtInitialPlayerResponse.Match(textContent);
 
-        // TODO: i'm not exactly sure why the group is specified in the regex is the second group
-        var json = JsonDocument.Parse(match.Groups[1].Value);
+        var json = JsonDocument.Parse(match.Groups[resultGroup].Value);
         var videoDetails = json.RootElement.GetProperty("videoDetails");
 
+        // The compiler likes to complain about possible null values here.
+        // If they are null, that means the parser needs to be re-done.
+        // If the parser needs to be re-done, the program is broken and should crash anyway.
+        // TODO: However, a cleaner, more informative exception could be thrown here.
 #pragma warning disable CS8601, CS8604
         return new Result()
         {

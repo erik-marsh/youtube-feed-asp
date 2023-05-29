@@ -4,7 +4,6 @@ using youtube_feed_asp.Enums;
 using youtube_feed_asp.Helpers;
 using youtube_feed_asp.Scrapers;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace youtube_feed_asp.Services;
 
@@ -154,12 +153,14 @@ public class VideoService
             return false;
         }
 
-        ch = RssScraper.GetChannelFromID(channelId);
-        if (ch is null)
+        var parseResult = ChannelScraper.Scrape($"https://www.youtube.com/channel/{channelId}");
+        ch = new Channel
         {
-            Console.WriteLine($"Unable to subscribe to channel {channelId}: an error occurred scraping the channel info.");
-            return false;
-        }
+            ChannelId = channelId,
+            Name = parseResult.Name,
+            LastModified = 0,
+            Videos = new List<Video>()
+        };
 
         m_context.Channels.Add(ch);
         m_context.SaveChanges();

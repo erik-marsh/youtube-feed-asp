@@ -129,8 +129,6 @@ public class VideoController : Controller
         if (videos is null)
             return NotFound();
 
-        // ToList is required because the implicit conversion to an ActionResult must happen on a concrete type
-        // ... i think is the reasoning
         return videos.ConvertAll(video => new VideoResponse(video));
     }
 
