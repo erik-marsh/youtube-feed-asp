@@ -30,7 +30,7 @@ public class YouTubeDataController : Controller
 
         VideoType type = (VideoType)parsedVideoType;
 
-        var videos = m_service.VideoQuery(type, "all", SortType.DateDescending);
+        var videos = m_service.GetAllVideos(type, SortType.DateDescending);
         if (videos is null)
             return NotFound();
 
@@ -59,7 +59,19 @@ public class YouTubeDataController : Controller
     [HttpGet("api/{videoType}/{channelId}/{sortType}")]
     public ActionResult<IEnumerable<Video.Serialized>> ApiQuery(string videoType, string channelId, string sortType)
     {
-        var videos = m_service.VideoQuery(videoType, channelId, sortType);
+        VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
+        SortType? parsedSortType = Parsing.ParseSortType(sortType);
+
+        if (parsedSortType is null || parsedVideoType is null)
+        {
+            Console.WriteLine("Invalid sort type or video type.");
+            return NotFound();
+        }
+
+        VideoType type = (VideoType)parsedVideoType;
+        SortType sort = (SortType)parsedSortType;
+
+        var videos = m_service.GetChannelVideos(type, channelId, sort);
         if (videos is null)
             return NotFound();
 

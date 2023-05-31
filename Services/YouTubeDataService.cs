@@ -106,15 +106,18 @@ public class YouTubeDataService
     }
     #endregion
 
-    #region R: Get Channel Videos
-    /// <summary>
-    /// Gets a list of every video of a specified type associated with the given channel ID.
-    /// </summary>
-    /// <param name="channelId">The canonical YouTube ID of the channel (a Base64 string starting with "UC").</param>
-    /// <param name="videoType">The type of video to retrieve.</param>
-    /// <param name="sortType">How the list of videos should be sorted.</param>
-    /// <exception cref="ArgumentException">Thrown if the given channel ID does not exist in the database.</exception>
-    private List<Video> GetChannelVideos(string channelId, VideoType videoType, SortType sortType)
+    #region R: Get Videos
+    public List<Video> GetAllVideos(VideoType videoType, SortType sortType)
+    {
+        var res = m_context.Videos
+            .Include(video => video.Uploader)
+            .AsNoTracking()
+            .Where(video => video.Type == videoType)
+            .ToList();
+        return SortVideosBy(res, sortType);
+    }
+
+    public List<Video>? GetChannelVideos(VideoType videoType, string channelId, SortType sortType)
     {
         var ch = m_context.Channels
             .Include(channel => channel.Videos)
@@ -122,69 +125,15 @@ public class YouTubeDataService
             .SingleOrDefault(channel => channel.ChannelId == channelId);
 
         if (ch is null)
-            throw new ArgumentException($"Channel ID {channelId} not found.");
+        {
+            Console.WriteLine($"Channel ID {channelId} not found.");
+            return null;
+        }
 
         var filteredVideos = ch.Videos
             .Where(video => video.Type == videoType)
             .ToList();
         return SortVideosBy(filteredVideos, sortType);
-    }
-    #endregion
-
-    #region R: Get Videos
-    public List<Video>? VideoQuery(string videoType, string channelId, string sortType)
-    {
-        VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
-        SortType? parsedSortType = Parsing.ParseSortType(sortType);
-
-        Console.WriteLine($"VideoType == {parsedVideoType}");
-        Console.WriteLine($"SortType == {parsedSortType}");
-
-        if (parsedSortType is null || parsedVideoType is null)
-            return null;
-
-        // TODO: there has to be a better way
-        VideoType type = (VideoType)parsedVideoType;
-        SortType sort = (SortType)parsedSortType;
-
-        return VideoQuery(type, channelId, sort);
-    }
-
-    public List<Video>? VideoQuery(VideoType videoType, string channelId, SortType sortType)
-    {
-        var videos = new List<Video>();
-
-        if (channelId == "all")
-        {
-            Console.WriteLine("parsing all channels");
-            videos.AddRange(GetVideos(videoType, sortType));
-        }
-        else
-        {
-            Console.WriteLine($"attempting to parse regular channel {channelId}");
-            try
-            {
-                videos.AddRange(GetChannelVideos(channelId, videoType, sortType));
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine(ex.Message);
-                return null;
-            }
-        }
-
-        return videos;
-    }
-
-    private List<Video> GetVideos(VideoType videoType, SortType sortType)
-    {
-        var videos = m_context.Videos
-            .Include(video => video.Uploader)
-            .AsNoTracking()
-            .Where(video => video.Type == videoType)
-            .ToList();
-
-        return SortVideosBy(videos, sortType);
     }
     #endregion
 
