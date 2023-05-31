@@ -8,11 +8,11 @@ using youtube_feed_asp.Views;
 namespace youtube_feed_asp.Controllers;
 
 [ApiController]
-public class VideoController : Controller
+public class YouTubeDataController : Controller
 {
     private readonly YouTubeDataService m_service;
 
-    public VideoController(YouTubeDataService service)
+    public YouTubeDataController(YouTubeDataService service)
     {
         m_service = service;
     }
