@@ -76,9 +76,9 @@ public class ChannelModel
 [ApiController]
 public class VideoController : Controller
 {
-    private readonly VideoService m_service;
+    private readonly YouTubeDataService m_service;
 
-    public VideoController(VideoService service)
+    public VideoController(YouTubeDataService service)
     {
         m_service = service;
     }

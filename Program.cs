@@ -11,7 +11,7 @@ builder.Services.AddControllersWithViews()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => options.CustomSchemaIds(type => type.FullName));
 builder.Services.AddSqlite<YouTubeDataContext>("Data Source=youtube-feed.db");
-builder.Services.AddScoped<VideoService>();
+builder.Services.AddScoped<YouTubeDataService>();
 
 var app = builder.Build();
 

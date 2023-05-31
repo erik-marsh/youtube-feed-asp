@@ -7,14 +7,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace youtube_feed_asp.Services;
 
-public class VideoService
+public class YouTubeDataService
 {
     private readonly YouTubeDataContext m_context;
 
-    public VideoService(YouTubeDataContext context)
+    public YouTubeDataService(YouTubeDataContext context)
     {
         m_context = context;
     }
+
+    #region Helper Methods
 
     private static List<Video> SortVideosBy(List<Video> list, SortType sortType)
     {
@@ -28,6 +30,26 @@ public class VideoService
             _ => list,
         };
     }
+
+    #endregion
+
+    #region Subscribe to Channel
+    #endregion
+
+    #region Unsubscribe from Channel
+    #endregion
+
+    #region Update Channel Subscriptions
+    #endregion
+
+    #region Get All Channels
+    #endregion
+
+    #region Get Individual Channel
+    #endregion
+
+    #region Get All Channel Videos
+    #endregion
 
     public List<Video>? VideoQuery(string videoType, string channelId, string sortType)
     {
