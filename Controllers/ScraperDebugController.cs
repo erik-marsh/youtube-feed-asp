@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using youtube_feed_asp.Scrapers;
-using youtube_feed_asp.Models;
-// using System.Net.Http;
-// using System.Text.RegularExpressions;
-// using System.Text.Json;
 
 namespace youtube_feed_asp.Controllers;
 
