@@ -75,61 +75,34 @@ public class YouTubeDataService
     #endregion
 
     #region R: Get Channels
-    public List<Channel>? ChannelQuery(VideoType videoType, string channelId, SortType sortType)
+    public List<Channel> GetAllChannels(VideoType videoType, SortType sortType)
     {
-        var channels = new List<Channel>();
-        if (channelId == "all")
-        {
-            var res = m_context.Channels
-                .Include(channel => channel.Videos)
-                .AsNoTracking();
-
-            channels.AddRange(res);
-        }
-        else
-        {
-            var ch = m_context.Channels
-                .Include(channel => channel.Videos)
-                .AsNoTracking()
-                .SingleOrDefault(channel => channel.ChannelId == channelId);
-
-            if (ch is null)
-                return null;
-
-            channels.Add(ch);
-        }
+        var channels = m_context.Channels
+            .Include(channel => channel.Videos)
+            .AsNoTracking()
+            .ToList();
 
         foreach (var ch in channels)
         {
-            ch.Videos = ch.Videos.Where(video => video.Type == videoType).ToList();
+            ch.Videos = ch.Videos
+                .Where(video => video.Type == videoType)
+                .ToList();
         }
 
         return channels;
     }
 
-    /// <summary>
-    /// Returns a channel from the database.
-    /// </summary>
-    /// <param name="id">The canonical YouTube ID of the channel (a Base64 string starting with "UC").</param>
-    public Channel? GetChannel(string id)
+    public Channel? GetChannel(VideoType videoType, string channelId, SortType sortType)
     {
-        return m_context.Channels
-            .Include(channel => channel.Videos) // TODO: group by subs and watch later
+        var ch = m_context.Channels
+            .Include(channel => channel.Videos)
             .AsNoTracking()
-            .SingleOrDefault(channel => channel.ChannelId == id);
-    }
+            .SingleOrDefault(channel => channel.ChannelId == channelId);
 
-    // TODO: probably want methods that return this list with and without videos
-    /// <summary>
-    /// Returns every channel in the database.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<Channel> GetAllChannels()
-    {
-        return m_context.Channels
-            .Include(channel => channel.Videos) // TODO: group by subs and watch later
-            .AsNoTracking()
-            .ToList();
+        if (ch is not null)
+            ch.Videos = ch.Videos.Where(video => video.Type == videoType).ToList();
+
+        return ch;
     }
     #endregion
 
@@ -218,15 +191,22 @@ public class YouTubeDataService
     #region U: Update Channel Subscriptions
     public bool UpdateAllChannelSubscriptions()
     {
-        var channels = GetAllChannels();
-        foreach (var ch in channels)
+        IEnumerable<Channel> allChannels = m_context.Channels
+            .Include(channel => channel.Videos)
+            .AsNoTracking();
+
+        foreach (var ch in allChannels)
             UpdateChannelSubscriptions(ch);
         return true;
     }
 
     public bool UpdateChannelSubscriptions(string channelId)
     {
-        var ch = GetChannel(channelId);
+        var ch = m_context.Channels
+            .Include(channel => channel.Videos)
+            .AsNoTracking()
+            .SingleOrDefault(channel => channel.ChannelId == channelId);
+
         if (ch is null)
         {
             Console.WriteLine($"Could not update subscriptions for channel {channelId} because it does not exist in the database.");

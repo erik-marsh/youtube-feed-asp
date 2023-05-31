@@ -48,7 +48,7 @@ public class YouTubeDataController : Controller
 
         VideoType type = (VideoType)parsedVideoType;
 
-        var channels = m_service.ChannelQuery(type, "all", SortType.DateDescending);
+        var channels = m_service.GetAllChannels(type, SortType.DateDescending);
         if (channels is null)
             return NotFound();
 
