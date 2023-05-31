@@ -9,7 +9,7 @@ using youtube_feed_asp.Data;
 
 namespace youtube_feed_asp.Migrations
 {
-    [DbContext(typeof(VideoContext))]
+    [DbContext(typeof(YouTubeDataContext))]
     [Migration("20221230200833_InitialModel")]
     partial class InitialModel
     {

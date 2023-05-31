@@ -6,7 +6,7 @@ public static class Extensions
     {
         using var scope = host.Services.CreateScope();
         var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<VideoContext>();
+        var context = services.GetRequiredService<YouTubeDataContext>();
         context.Database.EnsureCreated();
         DbInitializer.Initialize(context);
     }

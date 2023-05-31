@@ -9,9 +9,9 @@ namespace youtube_feed_asp.Services;
 
 public class VideoService
 {
-    private readonly VideoContext m_context;
+    private readonly YouTubeDataContext m_context;
 
-    public VideoService(VideoContext context)
+    public VideoService(YouTubeDataContext context)
     {
         m_context = context;
     }

@@ -3,9 +3,9 @@ using youtube_feed_asp.Models;
 
 namespace youtube_feed_asp.Data;
 
-public class VideoContext : DbContext
+public class YouTubeDataContext : DbContext
 {
-    public VideoContext(DbContextOptions<VideoContext> options)
+    public YouTubeDataContext(DbContextOptions<YouTubeDataContext> options)
         : base(options)
     {
     }

@@ -10,7 +10,7 @@ builder.Services.AddControllersWithViews()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => options.CustomSchemaIds(type => type.FullName));
-builder.Services.AddSqlite<VideoContext>("Data Source=youtube-feed.db");
+builder.Services.AddSqlite<YouTubeDataContext>("Data Source=youtube-feed.db");
 builder.Services.AddScoped<VideoService>();
 
 var app = builder.Build();

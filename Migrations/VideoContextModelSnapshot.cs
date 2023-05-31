@@ -8,7 +8,7 @@ using youtube_feed_asp.Data;
 
 namespace youtube_feed_asp.Migrations
 {
-    [DbContext(typeof(VideoContext))]
+    [DbContext(typeof(YouTubeDataContext))]
     partial class VideoContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

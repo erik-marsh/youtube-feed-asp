@@ -9,7 +9,7 @@ using youtube_feed_asp.Data;
 
 namespace youtube_feed_asp.Migrations
 {
-    [DbContext(typeof(VideoContext))]
+    [DbContext(typeof(YouTubeDataContext))]
     [Migration("20230522015445_AddedLengthAndThumbnail")]
     partial class AddedLengthAndThumbnail
     {
