@@ -9,6 +9,45 @@ namespace youtube_feed_asp.Models;
 public class Video
 {
     /// <summary>
+    /// Serialized version of the Video class.
+    /// Used to return Video objects as JSON,
+    /// as the Video class itself has a circular dependency on Channel.
+    /// </summary>
+    public readonly struct Serialized
+    {
+        public Serialized(Video video)
+        {
+            Id = video.VideoId;
+            if (video.Uploader is not null)
+            {
+                UploaderId = video.Uploader.ChannelId;
+                UploaderName = video.Uploader.Name;
+            }
+            else
+            {
+                UploaderId = "<unknown>";
+                UploaderName = "<unknown>";
+            }
+            Title = video.Title;
+            Type = video.Type.ToString();
+
+            DateTimeOffset published = DateTimeOffset.FromUnixTimeSeconds(video.TimePublished);
+            TimePublished = published.ToString("u", CultureInfo.InvariantCulture);
+
+            DateTimeOffset added = DateTimeOffset.FromUnixTimeSeconds(video.TimeAdded);
+            TimeAdded = added.ToString("u", CultureInfo.InvariantCulture);
+        }
+
+        public readonly string Id;
+        public readonly string UploaderId;
+        public readonly string UploaderName;
+        public readonly string Title;
+        public readonly string TimePublished;
+        public readonly string TimeAdded;
+        public readonly string Type;
+    }
+
+    /// <summary>
     /// Record ID (to ensure uniqueness).
     /// </summary>
     /// <remarks>
@@ -78,6 +117,8 @@ public class Video
 
     [NotMapped]
     public string ThumbnailUrl => $"https://i.ytimg.com/vi/{VideoId}/maxresdefault.jpg";
+
+    public Serialized Serialize() => new(this);
 
     /// <summary>
     /// Returns a human-readable form of the upload time.

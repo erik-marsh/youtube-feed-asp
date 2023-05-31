@@ -1,77 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using youtube_feed_asp.Enums;
 using youtube_feed_asp.Helpers;
 using youtube_feed_asp.Models;
 using youtube_feed_asp.Services;
+using youtube_feed_asp.Views;
 
 namespace youtube_feed_asp.Controllers;
-
-/// <summary>
-/// A struct that defines how a Video object is presented to the client.
-/// </summary>
-/// <remarks>
-/// Since Channel and Video contain a circular dependency,
-/// (and the Channel component of Video is marked as [JsonIgnore])
-/// this is necessary to include information about the uploader in Video items presented to the client.
-/// </remarks>
-public struct VideoResponse
-{
-    public VideoResponse(Video video)
-    {
-        Id = video.VideoId;
-        if (video.Uploader is not null)
-        {
-            UploaderId = video.Uploader.ChannelId;
-            UploaderName = video.Uploader.Name;
-        }
-        else
-        {
-            UploaderId = "Unknown channel";
-            UploaderName = "Channel name unknown.";
-        }
-        Title = video.Title;
-        Type = video.Type.ToString();
-
-        DateTimeOffset published = DateTimeOffset.FromUnixTimeSeconds(video.TimePublished);
-        TimePublished = published.ToString("u", CultureInfo.InvariantCulture);
-
-        DateTimeOffset added = DateTimeOffset.FromUnixTimeSeconds(video.TimeAdded);
-        TimeAdded = added.ToString("u", CultureInfo.InvariantCulture);
-    }
-
-    public string Id { get; set; }
-    public string UploaderId { get; set; }
-    public string UploaderName { get; set; }
-    public string Title { get; set; }
-    public string TimePublished { get; set; }
-    public string TimeAdded { get; set; }
-    public string Type { get; set; }
-}
-
-public class VideoModel
-{
-    public VideoModel(List<Video> videos, VideoType type)
-    {
-        Videos = videos;
-        Type = type;
-    }
-
-    public List<Video> Videos { get; }
-    public VideoType Type { get; }
-}
-
-public class ChannelModel
-{
-    public ChannelModel(List<Channel> channels, VideoType type)
-    {
-        Channels = channels;
-        Type = type;
-    }
-
-    public List<Channel> Channels { get; }
-    public VideoType Type { get; }
-}
 
 [ApiController]
 public class VideoController : Controller
@@ -123,13 +57,13 @@ public class VideoController : Controller
     }
 
     [HttpGet("api/{videoType}/{channelId}/{sortType}")]
-    public ActionResult<IEnumerable<VideoResponse>> ApiQuery(string videoType, string channelId, string sortType)
+    public ActionResult<IEnumerable<Video.Serialized>> ApiQuery(string videoType, string channelId, string sortType)
     {
         var videos = m_service.VideoQuery(videoType, channelId, sortType);
         if (videos is null)
             return NotFound();
 
-        return videos.ConvertAll(video => new VideoResponse(video));
+        return videos.ConvertAll(video => video.Serialize());
     }
 
     [HttpPost("api/channels/{channelId}")]
