@@ -17,7 +17,6 @@ public class YouTubeDataService
     }
 
     #region Helper Methods
-
     private static List<Video> SortVideosBy(List<Video> list, SortType sortType)
     {
         return sortType switch
@@ -30,130 +29,13 @@ public class YouTubeDataService
             _ => list,
         };
     }
-
     #endregion
 
-    #region Subscribe to Channel
-    #endregion
+    //==============================================================================
+    // Database CRUD Operations
+    //==============================================================================
 
-    #region Unsubscribe from Channel
-    #endregion
-
-    #region Update Channel Subscriptions
-    #endregion
-
-    #region Get All Channels
-    #endregion
-
-    #region Get Individual Channel
-    #endregion
-
-    #region Get All Channel Videos
-    #endregion
-
-    public List<Video>? VideoQuery(string videoType, string channelId, string sortType)
-    {
-        VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
-        SortType? parsedSortType = Parsing.ParseSortType(sortType);
-
-        Console.WriteLine($"VideoType == {parsedVideoType}");
-        Console.WriteLine($"SortType == {parsedSortType}");
-
-        if (parsedSortType is null || parsedVideoType is null)
-            return null;
-
-        // TODO: there has to be a better way
-        VideoType type = (VideoType)parsedVideoType;
-        SortType sort = (SortType)parsedSortType;
-
-        return VideoQuery(type, channelId, sort);
-    }
-
-    public List<Video>? VideoQuery(VideoType videoType, string channelId, SortType sortType)
-    {
-        var videos = new List<Video>();
-
-        if (channelId == "all")
-        {
-            Console.WriteLine("parsing all channels");
-            videos.AddRange(GetVideosFromAllChannels(videoType, sortType));
-        }
-        else
-        {
-            Console.WriteLine($"attempting to parse regular channel {channelId}");
-            try
-            {
-                videos.AddRange(GetVideosFromChannel(channelId, videoType, sortType));
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine(ex.Message);
-                return null;
-            }
-        }
-
-        return videos;
-    }
-
-    private List<Video> GetVideosFromAllChannels(VideoType videoType, SortType sortType)
-    {
-        var videos = m_context.Videos
-            .Include(video => video.Uploader)
-            .AsNoTracking()
-            .Where(video => video.Type == videoType)
-            .ToList();
-
-        return SortVideosBy(videos, sortType);
-    }
-
-    private List<Video> GetVideosFromChannel(string channelId, VideoType videoType, SortType sortType)
-    {
-        var ch = m_context.Channels
-            .Include(channel => channel.Videos)
-            .AsNoTracking()
-            .SingleOrDefault(channel => channel.ChannelId == channelId);
-
-        if (ch is null)
-            throw new ArgumentException($"Channel ID {channelId} not found.");
-
-        var filteredVideos = ch.Videos
-            .Where(video => video.Type == videoType)
-            .ToList();
-        return SortVideosBy(filteredVideos, sortType);
-    }
-
-    public List<Channel>? ChannelQuery(VideoType videoType, string channelId, SortType sortType)
-    {
-        var channels = new List<Channel>();
-        if (channelId == "all")
-        {
-            var res = m_context.Channels
-                .Include(channel => channel.Videos)
-                .AsNoTracking();
-
-            channels.AddRange(res);
-        }
-        else
-        {
-            var ch = m_context.Channels
-                .Include(channel => channel.Videos)
-                .AsNoTracking()
-                .SingleOrDefault(channel => channel.ChannelId == channelId);
-
-            if (ch is null)
-                return null;
-
-            channels.Add(ch);
-        }
-
-        foreach (var ch in channels)
-        {
-            ch.Videos = ch.Videos.Where(video => video.Type == videoType).ToList();
-        }
-
-        return channels;
-    }
-
+    #region C: Subscribe to Channel
     /// <summary>
     /// Adds a channel to the database.
     /// </summary>
@@ -190,75 +72,40 @@ public class YouTubeDataService
         Console.WriteLine($"Successfully subscribed to channel {channelId}.");
         return true;
     }
+    #endregion
 
-    /// <summary>
-    /// Removes a channel and all of it's associated videos tagged with VideoType.Subscription from the database.
-    /// </summary>
-    /// <param name="channelId">A Base64 YouTube canonical channel ID.</param>
-    /// <returns>
-    /// If the channel is not in the database, returns false.
-    /// Otherwise, removes the channel and it's videos and returns true.
-    /// </returns>
-    public bool UnsubscribeFromChannel(string channelId)
+    #region R: Get Channels
+    public List<Channel>? ChannelQuery(VideoType videoType, string channelId, SortType sortType)
     {
-        var ch = m_context.Channels
-            .Include(channel => channel.Videos)
-            .SingleOrDefault(channel => channel.ChannelId == channelId);
-
-        if (ch is null)
+        var channels = new List<Channel>();
+        if (channelId == "all")
         {
-            Console.WriteLine($"Unable to unsubscribe from channel {channelId}: the channel does not exist in the database.");
-            return false;
+            var res = m_context.Channels
+                .Include(channel => channel.Videos)
+                .AsNoTracking();
+
+            channels.AddRange(res);
+        }
+        else
+        {
+            var ch = m_context.Channels
+                .Include(channel => channel.Videos)
+                .AsNoTracking()
+                .SingleOrDefault(channel => channel.ChannelId == channelId);
+
+            if (ch is null)
+                return null;
+
+            channels.Add(ch);
         }
 
-        // remove all subscriptions from this channel from the database
-        var videos = ch.Videos.Where(v => v.Type == VideoType.Subscription);
-        m_context.Videos.RemoveRange(videos);
-        m_context.Channels.Remove(ch);
-        m_context.SaveChanges();
-
-        Console.WriteLine($"Successfully unsubscribed from channel {channelId} and removed all subscriptions related to the channel.");
-        return true;
-    }
-
-    //==============================================================================
-    // Video Database Methods
-    //==============================================================================
-
-    /// <summary>
-    /// Removes a video from the database.
-    /// </summary>
-    /// <param name="id">The YouTube ID of the video to remove from the database.</param>
-    /// <remarks>
-    /// If the ID does not correspond to a video in the database, this function does nothing.
-    /// </remarks>
-    /// <returns>
-    /// If the video is not in the database, returns false.
-    /// If the video is in the database, deletes the video from the database and returns true.
-    /// </returns>
-    public bool DeleteVideo(string id)
-    {
-        // TODO: do i also need to remove the video from its associated channels?
-        // yes, this is intentionally an IEnumerable
-        // in the documentation for Video, I note that there is weridness
-        // with YouTube premieres/etc that make video IDs non-unique
-        var videos = m_context.Videos.Where(video => video.VideoId == id);
-        if (!videos.Any())
+        foreach (var ch in channels)
         {
-            Console.WriteLine($"Could not delete video {id} from the database because it does not exist in the database.");
-            return false;
+            ch.Videos = ch.Videos.Where(video => video.Type == videoType).ToList();
         }
 
-        m_context.Videos.RemoveRange(videos);
-        m_context.SaveChanges();
-
-        Console.WriteLine($"Successfully deleted video {id} from the database.");
-        return true;
+        return channels;
     }
-
-    //==============================================================================
-    // Channel Database Methods
-    //==============================================================================
 
     /// <summary>
     /// Returns a channel from the database.
@@ -284,24 +131,91 @@ public class YouTubeDataService
             .AsNoTracking()
             .ToList();
     }
+    #endregion
 
+    #region R: Get Channel Videos
     /// <summary>
     /// Gets a list of every video of a specified type associated with the given channel ID.
     /// </summary>
-    /// <param name="id">The canonical YouTube ID of the channel (a Base64 string starting with "UC").</param>
-    /// <param name="type">The VideoType of the videos.</param>
-    public IEnumerable<Video> GetChannelVideosByType(string id, VideoType type)
+    /// <param name="channelId">The canonical YouTube ID of the channel (a Base64 string starting with "UC").</param>
+    /// <param name="videoType">The type of video to retrieve.</param>
+    /// <param name="sortType">How the list of videos should be sorted.</param>
+    /// <exception cref="ArgumentException">Thrown if the given channel ID does not exist in the database.</exception>
+    private List<Video> GetChannelVideos(string channelId, VideoType videoType, SortType sortType)
     {
-        var channel = GetChannel(id);
-        if (channel is null || channel.Videos is null)
-            return new List<Video>(); // empty list
+        var ch = m_context.Channels
+            .Include(channel => channel.Videos)
+            .AsNoTracking()
+            .SingleOrDefault(channel => channel.ChannelId == channelId);
 
-        return channel.Videos.Where(video => video.Type == type);
+        if (ch is null)
+            throw new ArgumentException($"Channel ID {channelId} not found.");
+
+        var filteredVideos = ch.Videos
+            .Where(video => video.Type == videoType)
+            .ToList();
+        return SortVideosBy(filteredVideos, sortType);
+    }
+    #endregion
+
+    #region R: Get Videos
+    public List<Video>? VideoQuery(string videoType, string channelId, string sortType)
+    {
+        VideoType? parsedVideoType = Parsing.ParseVideoType(videoType);
+        SortType? parsedSortType = Parsing.ParseSortType(sortType);
+
+        Console.WriteLine($"VideoType == {parsedVideoType}");
+        Console.WriteLine($"SortType == {parsedSortType}");
+
+        if (parsedSortType is null || parsedVideoType is null)
+            return null;
+
+        // TODO: there has to be a better way
+        VideoType type = (VideoType)parsedVideoType;
+        SortType sort = (SortType)parsedSortType;
+
+        return VideoQuery(type, channelId, sort);
     }
 
-    //==============================================================================
-    // Subscription Update
-    //==============================================================================
+    public List<Video>? VideoQuery(VideoType videoType, string channelId, SortType sortType)
+    {
+        var videos = new List<Video>();
+
+        if (channelId == "all")
+        {
+            Console.WriteLine("parsing all channels");
+            videos.AddRange(GetVideos(videoType, sortType));
+        }
+        else
+        {
+            Console.WriteLine($"attempting to parse regular channel {channelId}");
+            try
+            {
+                videos.AddRange(GetChannelVideos(channelId, videoType, sortType));
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+        return videos;
+    }
+
+    private List<Video> GetVideos(VideoType videoType, SortType sortType)
+    {
+        var videos = m_context.Videos
+            .Include(video => video.Uploader)
+            .AsNoTracking()
+            .Where(video => video.Type == videoType)
+            .ToList();
+
+        return SortVideosBy(videos, sortType);
+    }
+    #endregion
+
+    #region U: Update Channel Subscriptions
     public bool UpdateAllChannelSubscriptions()
     {
         var channels = GetAllChannels();
@@ -375,4 +289,70 @@ public class YouTubeDataService
             .IsModified = true;
         m_context.SaveChanges();
     }
+    #endregion
+
+    #region D: Unsubscribe from Channel
+    /// <summary>
+    /// Removes a channel and all of it's associated videos tagged with VideoType.Subscription from the database.
+    /// </summary>
+    /// <param name="channelId">A Base64 YouTube canonical channel ID.</param>
+    /// <returns>
+    /// If the channel is not in the database, returns false.
+    /// Otherwise, removes the channel and it's videos and returns true.
+    /// </returns>
+    public bool UnsubscribeFromChannel(string channelId)
+    {
+        var ch = m_context.Channels
+            .Include(channel => channel.Videos)
+            .SingleOrDefault(channel => channel.ChannelId == channelId);
+
+        if (ch is null)
+        {
+            Console.WriteLine($"Unable to unsubscribe from channel {channelId}: the channel does not exist in the database.");
+            return false;
+        }
+
+        // remove all subscriptions from this channel from the database
+        var videos = ch.Videos.Where(v => v.Type == VideoType.Subscription);
+        m_context.Videos.RemoveRange(videos);
+        m_context.Channels.Remove(ch);
+        m_context.SaveChanges();
+
+        Console.WriteLine($"Successfully unsubscribed from channel {channelId} and removed all subscriptions related to the channel.");
+        return true;
+    }
+    #endregion
+
+    #region D: Delete Video
+    /// <summary>
+    /// Removes a video from the database.
+    /// </summary>
+    /// <param name="id">The YouTube ID of the video to remove from the database.</param>
+    /// <remarks>
+    /// If the ID does not correspond to a video in the database, this function does nothing.
+    /// </remarks>
+    /// <returns>
+    /// If the video is not in the database, returns false.
+    /// If the video is in the database, deletes the video from the database and returns true.
+    /// </returns>
+    public bool DeleteVideo(string id)
+    {
+        // TODO: do i also need to remove the video from its associated channels?
+        // yes, this is intentionally an IEnumerable
+        // in the documentation for Video, I note that there is weridness
+        // with YouTube premieres/etc that make video IDs non-unique
+        var videos = m_context.Videos.Where(video => video.VideoId == id);
+        if (!videos.Any())
+        {
+            Console.WriteLine($"Could not delete video {id} from the database because it does not exist in the database.");
+            return false;
+        }
+
+        m_context.Videos.RemoveRange(videos);
+        m_context.SaveChanges();
+
+        Console.WriteLine($"Successfully deleted video {id} from the database.");
+        return true;
+    }
+    #endregion
 }
