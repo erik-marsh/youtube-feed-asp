@@ -41,10 +41,16 @@ public static class ChannelScraper
     /// Scrapes the channel ID, channel handle, and channel name from a YouTube channel URL.
     /// </summary>
     /// <param name="channelUrl">Any sort of URL that points to a YouTube channel.</param>
-    public static Result Scrape(string channelUrl)
+    /// <returns>
+    /// Returns a valid ChannelScraper.Result object if the channelUrl exists.
+    /// Otherwise, returns null.
+    /// </returns>
+    public static Result? Scrape(string channelUrl)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, channelUrl);
         var response = httpClient.Send(request);
+        if (!response.IsSuccessStatusCode) return null;
+
         var textContent = response.Content.ReadAsStringAsync().Result;  // blocking
 
         var matchChannelId = findChannelId.Match(textContent);

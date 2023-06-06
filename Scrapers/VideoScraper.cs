@@ -29,14 +29,21 @@ public static class VideoScraper
     /// contains a script tag that a single JSON object named ytInitialPlayerResponse.
     /// This object contains a bunch of data and metadata for the video that we want to scrape from.
     /// </summary>
+    /// <returns>
+    /// If the videoId is valid, returns a VideoScraper.Result object.
+    /// Otherwise, returns null.
+    /// </returns>
     private readonly static Regex findYtInitialPlayerResponse = new($"<script[^>]*>\\s*var ytInitialPlayerResponse\\s*=\\s*(?<{resultGroup}>.*);</script>", RegexOptions.Compiled);
 
-    public static Result Scrape(string videoId)
+    public static Result? Scrape(string videoId)
     {
         var url = $"https://www.youtube.com/watch?v={videoId}";
 
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         var response = httpClient.Send(request);
+        if (!response.IsSuccessStatusCode)
+            return null;
+
         var textContent = response.Content.ReadAsStringAsync().Result;  // blocking
 
         var match = findYtInitialPlayerResponse.Match(textContent);

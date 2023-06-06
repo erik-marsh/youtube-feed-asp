@@ -25,6 +25,7 @@ public static class RssScraper
     /// <returns>A list of RSS results, ordered from oldest to newest.</returns>
     public static List<Result> Scrape(string channelId)
     {
+        // TODO: need to check that this doesn't return a 404
         var feed = GetChannelRSSFeed(channelId);
         var feedVideos = feed.Items.ToList();
         var result = new List<Result>();

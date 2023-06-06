@@ -35,6 +35,8 @@ public class YouTubeDataService
     // Database CRUD Operations
     //==============================================================================
 
+    // TODO: a read method for a single video would be nice to have
+
     #region C: Subscribe to Channel
     /// <summary>
     /// Adds a channel to the database.
@@ -58,10 +60,15 @@ public class YouTubeDataService
         }
 
         var parseResult = ChannelScraper.Scrape($"https://www.youtube.com/channel/{channelId}");
+        // TODO: this existence check should likely be the first check in the function
+        if (parseResult is null)
+            return false;
+
+        var res = (ChannelScraper.Result)parseResult;
         ch = new Channel
         {
             ChannelId = channelId,
-            Name = parseResult.Name,
+            Name = res.Name,
             LastModified = 0,
             Videos = new List<Video>()
         };
@@ -182,8 +189,10 @@ public class YouTubeDataService
         foreach (var rssResponse in rssVideos)
         {
             Console.WriteLine($"    uploaded={rssResponse.TimePublished}");
+            // TODO: needs better null checking
             var videoResponse = VideoScraper.Scrape(rssResponse.VideoId);
 
+            // TODO: document the meaning of a video length of -1 seconds
             newVideos.Add(new Video()
             {
                 VideoId = rssResponse.VideoId,
@@ -192,7 +201,7 @@ public class YouTubeDataService
                 TimePublished = rssResponse.TimePublished,
                 TimeAdded = (int)DateTimeOffset.Now.ToUnixTimeSeconds(),
                 Type = VideoType.Subscription,
-                LengthSeconds = videoResponse.LengthSeconds
+                LengthSeconds = videoResponse?.LengthSeconds ?? -1
             });
 
             // rssVideos should be in the correct order for the assignment to be correct,
